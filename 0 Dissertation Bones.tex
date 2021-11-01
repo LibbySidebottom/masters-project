@@ -20,19 +20,32 @@
 %   (so 2014 rather than the academic year, say 2013/14 say).
 
 \documentclass[ % the name of the author
-                    author={Daniel Page},
+                    author={Elizabeth Sidebottom},
                 % the name of the supervisor
-                supervisor={Dr. Andrew Calway},
+                supervisor={Dr. Alex Kavvos},
                 % the degree programme
-                    degree={BSc},
+                    degree={MEng},
                 % the dissertation    title (which cannot be blank)
-                     title={Some Structural Guidelines for CS BSc Dissertations},
+                     title={Concurrency with Classical Linear Logic},
                 % the dissertation subtitle (which can    be blank)
                   subtitle={},
                 % the dissertation     type
-                      type={software development},
+                      type={programming languages},
                 % the year of submission
-                      year={2014} ]{dissertation}
+                      year={2022}]{dissertation}
+
+\usepackage[
+  backend=biber,
+  style=authoryear-icomp,
+  sortlocale=de_DE,
+  natbib=true,
+  url=false, 
+  doi=true,
+  eprint=false
+]{biblatex}
+\addbibresource{bibo.bib}
+
+\bibliography{dissertation}
 
 \begin{document}
 
@@ -54,10 +67,10 @@ important but {\em not} absolute: their aim is simply to highlight that a
 clear, concise description is better than a rambling alternative that makes
 it hard to separate important content and facts from trivia.
 
-You can use this document as a \LaTeX-based~\cite{latexbook1,latexbook2} 
+You can use this document as a \LaTeX-based~\cite{wombat2016,lion2010} 
 template for your own dissertation by simply deleting extraneous sections
 and content; keep in mind that the associated {\tt Makefile} could be of
-use, in particular because it automatically executes \mbox{\BibTeX} to 
+use, in particular because it automatically executes \mbox{\LaTeX} to
 deal with the associated bibliography. Alternatively, upload your zip folder to Overleaf (collaborative online \LaTeX editor and compiler) 
 
 % =============================================================================
@@ -90,6 +103,11 @@ deal with the associated bibliography. Alternatively, upload your zip folder to 
 \listofalgorithms
 \lstlistoflistings
 
+\include{1 Summary.tex}
+\include{2 Changes.tex}
+\include{3 Supporting Technologies.tex}
+\include{4 Notation and Acronyms.tex}
+\include{5 Acknowledgements.tex}
 % The following sections are part of the front matter, but are not generated
 % automatically by LaTeX; the use of \chapter* means they are not numbered.
 
@@ -107,7 +125,12 @@ deal with the associated bibliography. Alternatively, upload your zip folder to 
 %   directive in C.
 
 \mainmatter
-
+\include{6 Contextual Background.tex}
+\include{7 Technical Background.tex}
+\include{8 Project Execution.tex}
+\include{9 Main Body.tex}
+\include{10 Critical Evaluation.tex}
+\include{11 Conclusion.tex}
 % =============================================================================
 
 % Finally, after the main matter, the back matter is specified.  This is
@@ -125,8 +148,9 @@ deal with the associated bibliography. Alternatively, upload your zip folder to 
 
 \backmatter
 
-\bibliography{dissertation}
+\printbibliography
 
+\include{12 Appendix.tex}
 % =============================================================================
 
 \end{document}
