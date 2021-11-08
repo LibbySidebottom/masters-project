@@ -1,0 +1,242 @@
+%%% SESSION TYPE MACROS
+
+\usepackage{xcolor}
+\definecolor{Matterhorn}{RGB}{70,45,68}
+\definecolor{Cowboy}{RGB}{86,47,50}
+
+\definecolor{RegalBlue}{RGB}{3,69,117}
+\definecolor{RedDevil}{RGB}{134,1,17}
+
+\definecolor{IdiotPurple}{RGB}{102, 51, 102}
+\definecolor{FernGreen}{HTML}{467D5E}
+\definecolor{ThroneBlue}{RGB}{51, 51, 102}
+\definecolor{JustBlue}{RGB}{0,0,255}
+\definecolor{PermaRed}{RGB}{255, 102, 102}
+\definecolor{DogwoodRose}{HTML}{cc3366}
+\definecolor{MaizeCrayola}{RGB}{255, 204, 102}
+\definecolor{Black}{RGB}{0, 0, 0}
+
+% This combination is colour-blind friendly as checked by the Adobe tool
+% https://color.adobe.com/create/color-accessibility
+\def\ProcColor{DogwoodRose}
+\def\NameColor{FernGreen}
+\def\DerivColor{JustBlue}
+\def\TypeColor{Black}
+
+\NewDocumentCommand{\Comp}{m}{\mathfrak{C}(#1)}
+
+% OPERATORS
+
+\NewDocumentCommand{\with}{}{\mathbin{\binampersand}}
+\NewDocumentCommand{\parr}{}{\mathbin{\bindnasrepma}}
+\NewDocumentCommand{\var}{m}{\mathcal{#1}}
+\NewDocumentCommand{\oempty}{}{\emptyset}
+\NewDocumentCommand{\pempty}{}{\cdot}
+\NewDocumentCommand{\ounit}{}{\mathbf{1}}
+\NewDocumentCommand{\punit}{}{\bot}
+\NewDocumentCommand{\cunit}{}{\mathbf{0}}
+\NewDocumentCommand{\wunit}{}{\mathbf{\top}}
+\NewDocumentCommand{\negg}{sm}{{\IfBooleanTF{#1}{(#2)}{#2}}^\perp}
+\NewDocumentCommand{\que}{}{\textrm{?`}}
+\NewDocumentCommand{\ofc}{}{\textrm{!}}
+\NewDocumentCommand{\exc}{}{\textrm{!`}}
+\NewDocumentCommand{\whynot}{}{\textrm{?}}
+
+
+% \Proc{M} colors a process
+\NewDocumentCommand{\Proc}{m}{\textcolor{\ProcColor}{#1}}
+% \Procsf{n} textsf's and colours a process
+\NewDocumentCommand{\Procsf}{m}{\Proc{\textsf{#1}}}
+% \Name{x} colors a name
+\NewDocumentCommand{\Name}{m}{{\textcolor{\NameColor}{#1}}}
+% \Namesf{n} textsf's and colours a name
+\NewDocumentCommand{\Namesf}{m}{\Name{\textsf{#1}}}
+% \Deriv{M} colors a derivable term
+\NewDocumentCommand{\Deriv}{m}{\textcolor{\DerivColor}{#1}}
+\NewDocumentCommand{\Derivsf}{m}{\Deriv{\textsf{#1}}}
+% \Type{M} colors a type (just black)
+\NewDocumentCommand{\Type}{m}{\textcolor{\TypeColor}{#1}}
+
+% \Chan{n} textsf's and colours a name
+\NewDocumentCommand{\Chan}{m}{\Name{\textsf{#1}}}
+% \Purpleparens{M} yields parentheses in IdiotPurple
+\NewDocumentCommand{\Derivparens}{m}{{\textcolor{\DerivColor}{(}}#1{\color{\DerivColor}{)}}}
+% \Procparens{M} yields parentheses with process color
+\NewDocumentCommand{\Procparens}{m}{{\textcolor{\ProcColor}{(}}#1{\color{\ProcColor}{)}}}
+\NewDocumentCommand{\IfProcparens}{mm}{\IfBooleanTF{#1}{\Proc{(#2)}}{#2}}
+% \Procangles{M} yields angles with process color
+\NewDocumentCommand{\Procangles}{m}{{\textcolor{\ProcColor}{\langle}}#1{\color{\ProcColor}{\rangle}}}
+% \Procbrackets{M} yields brackets with process color
+\NewDocumentCommand{\Procbrackets}{m}{{\textcolor{\ProcColor}{[}}#1{\color{\ProcColor}{]}}}
+
+% the terminating process
+\NewDocumentCommand{\Stop}{}{\Proc{\textsf{stop}}}
+% the buffer link
+% \Link{x}{y} yields x <-> y
+\NewDocumentCommand{\Link}{mm}{\Name{#1} \mathbin{\Proc{\leftrightarrow}} \Name{#2}}
+
+% \Pre{x} yields pi_x
+% \Pre{x}[P] yields pi_x.P
+\NewDocumentCommand{\Pre}{mo}{
+  \Proc{
+    \pi_{\Name{#1}} \IfNoValueF{#2}{.\, #2}
+    }
+}
+
+% name partition
+\NewDocumentCommand{\Part}{m}{\lfloor \Ctxs{#1} \rfloor}
+
+\NewDocumentCommand{\fn}{m}{\mathop{\textsc{Fn}}(\Proc{#1})}
+\NewDocumentCommand{\bn}{m}{\mathop{\textsc{Bn}}(\Proc{#1})}
+
+% \Out{u}{x}{P} yields u[x].P
+% \Out*{u}{x}{P} yields u[x]. (P)
+\NewDocumentCommand{\Out}{smmm}{
+  \Name{#2}\Procbrackets{\Name{#3}}\Proc{.}\,\IfBooleanTF{#1}{\Procparens{\Proc{#4}}}{\Proc{#4}}
+}
+% \In{u}{x}{P} yields u(x).P
+\NewDocumentCommand{\In}{mmm}{
+  \Name{#1}\Procparens{\Name{#2}}\Proc{.}\, \Proc{#3}
+}
+% \New{x}{y}{P} yields nu xy. P
+% \New*{x}{y}{P} yields nu xy. (P)
+\NewDocumentCommand{\New}{smmm}{
+  \Proc{\nu \Name{#2}\Name{#3}\Proc{.} \,\IfBooleanTF{#1}{\Procparens{#4}}{#4}}
+}
+% \Par{P}{Q} yields P | Q
+% \Par*{P}{Q} yields (P | Q)
+\NewDocumentCommand{\Par}{smm}{\IfBooleanTF{#1}{\Procparens}{}{\Proc{#2} \mathbin{\Proc{\mid}} \Proc{#3}}}
+% \Inl{y}{P} yields y[inl]. P
+\NewDocumentCommand{\Inl}{mm}{\Out{#1}{\Proc{\textsf{inl}}}{\Proc{#2}}}
+% \Inr{y}{P} yields y[inr]. P
+\NewDocumentCommand{\Inr}{mm}{\Out{#1}{\Proc{\textsf{inr}}}{\Proc{#2}}}
+% \Case{x}{Q}{R} yields x.case(Q; R)
+\NewDocumentCommand{\Case}{mmm}{
+  \Proc{\Name{#1}.\textsf{case}\{#2; #3\}}
+}
+
+\NewDocumentCommand{\Weaken}{smmm}{
+  \Deriv{\mathcal{W}_{\Name{#2},\Type{#3}}[](\Proc{#4})}
+}
+
+\NewDocumentCommand{\Contract}{smmmmm}{
+  \Deriv{\mathcal{C}_{\Name{#2},\Type{#3}}[\Name{#4},\Name{#5}](\Proc{#6})}
+}
+
+\NewDocumentCommand{\Coderelict}{smmm}{
+  \Deriv{\overline{?}\Name{#2}[\Name{#3}].\Proc{#4}}
+}
+
+% WARNING: use \Name{-} to color the names!
+
+% weakening
+\NewDocumentCommand{\WhyW}{smm}{
+  \Proc{\whynot \Name{#2} []. \, \IfProcparens{#1}{#3}}
+}
+
+% contraction
+\NewDocumentCommand{\WhyC}{smmmm}{
+  \Proc{\whynot \Name{#2} [\Name{#3},\Name{#4}].\, \IfProcparens{#1}{#5}}
+}
+
+% dereliction
+\NewDocumentCommand{\WhyD}{smmm}{
+  \Proc{\whynot \Name{#2} [\Name{#3}]. \, \IfProcparens{#1}{#4}}
+}
+
+% absorbtion
+\NewDocumentCommand{\WhyA}{smmm}{
+  \Proc{\whynot \Name{#2} [\Name{#3}]. \, \IfProcparens{#1}{#4}}
+}
+
+% syntax sugar
+\NewDocumentCommand{\WhyP}{smmm}{
+  \Proc{\whynot \Name{#2} \{#3\}.\,\IfProcparens{#1}{#4}}
+}
+
+% our notion for promotion
+\NewDocumentCommand{\OfCP}{smmm}{
+  \Proc{\ofc \Name{#2}\{\Name{#3}.\, #4\}}
+}
+
+% the traditional notation for promotion (Wadler)
+\NewDocumentCommand{\OfCW}{smmm}{
+  \Proc{\ofc \Name{#2}(\Name{#3}).\,\IfProcparens{#1}{#4}}
+}
+
+% a notion for promotion that's more explicit on variable names
+\NewDocumentCommand{\OfCQ}{smmmmm}{
+  \Proc{\ofc \Name{#2}(\Name{#3})\{\Name{#4},\Name{#5}.#6\}}
+}
+
+% coexponentials
+
+% weakening
+\NewDocumentCommand{\QueW}{smm}{
+  \Proc{\que \Name{#2} []. \, \IfBooleanTF{#1}{\Procparens{#3}}{#3}}}
+
+% absorption
+\NewDocumentCommand{\QueA}{smmm}{
+  \Proc{\que \Name{#2} [\Name{#3}]. \, \IfBooleanTF{#1}{\Procparens{#4}}{#4}}
+}
+
+\NewDocumentCommand{\ExcP}{smmmmmmmm}{
+  \Proc{
+    \exc \Name{#2}\{\Name{#6}, \Name{#7}, \Name{#8}.\, #9 \}(\Name{#4}, \Name{#5})
+    \Proc{.}\, \IfBooleanTF{#1}{\Procparens{#3}}{#3}
+  }
+}
+
+% Digging macros
+\NewDocumentCommand{\DigWhyN}{mm}{\Proc{\textsf{dig}\whynot\Name{#1}. \, #2}}
+\NewDocumentCommand{\DigQue}{mm}{\Proc{\textsf{dig}\que\Name{#1}. \, #2}}
+
+%%% HYPERSEQUENTS
+
+% \IsProc[P]{A} produces P |- A
+% #1 should already be colored
+\NewDocumentCommand{\IsProc}{mm}{\Proc{#1} \vdash \Type{#2}}
+
+% \Ctxs{G} produces curly G
+\NewDocumentCommand{\Ctxs}{m}{\mathcal{#1}}
+
+%%% OPERATIONAL SEMANTICS
+
+% \Sb{P}{x}{y} yields P[x/y]
+\NewDocumentCommand{\Sb}{smmm}{
+  \IfProcparens{#1}{\Proc{#2}}{
+    \Deriv{[\Name{#3}/\Name{#4}]}
+    }
+}
+% \red{P}{Q} yields P -> Q
+% \red*{P}{Q} yields P ->* Q
+\NewDocumentCommand{\red}{smm}{\Proc{#2} \longrightarrow^{\IfBooleanTF{#1}{*}{}} \Proc{#3}
+}
+
+\NewDocumentCommand{\trans}{smmm}{\Proc{#2} \xrightarrow{#3}^{\IfBooleanTF{#1}{*}{}} \Proc{#4}
+}
+
+\NewDocumentCommand{\Equiv}{mm}{\Proc{#1} \equiv \Proc{#2}} 
+
+\NewDocumentCommand{\Choose}{mm}{\Deriv{\textsf{choose}(\Proc{#1}, \Proc{#2})}}
+
+%%% BOOLEANS
+
+\NewDocumentCommand{\boom}{}{\mathbf{2}}
+\NewDocumentCommand{\boop}{}{\mathbf{2}_{\parr}}
+\NewDocumentCommand{\TrueP}{m}{\Deriv{\textsf{tt}}_\Name{#1}}
+\NewDocumentCommand{\FalseP}{m}{\Deriv{\textsf{ff}}_\Name{#1}}
+\NewDocumentCommand{\TrueOutP}{mm}{\Out{#1}{\Proc{\textsf{tt}_{\parr}}}{#2}}
+\NewDocumentCommand{\FalseOutP}{mm}{\Out{#1}{\Proc{\textsf{ff}_{\parr}}}{#2}}
+\NewDocumentCommand{\TrueOutO}{mm}{\Out{#1}{\Proc{\textsf{tt}}}{#2}}
+\NewDocumentCommand{\FalseOutO}{mm}{\Out{#1}{\Proc{\textsf{ff}}}{#2}}
+\NewDocumentCommand{\IfO}{mmm}{\Deriv{
+   \textsf{if}
+    \Derivparens{\Name{#1} ;\, \Proc{#2} ;\, \Proc{#3}}
+}}
+\NewDocumentCommand{\IfP}{mmm}{\Derive{
+    \textsf{if}_{\parr}
+   \Derivparens{\Name{#1} ;\, \Proc{#2} ;\, \Proc{#3}}
+}}
+
+\NewDocumentCommand{\Symb}{}{\mathbb{S}}
