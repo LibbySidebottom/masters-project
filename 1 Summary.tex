@@ -4,6 +4,16 @@
 \vspace{1cm} 
 
 \noindent
+
+$\Proc{M}$
+
+\begin{mathpar}
+  \inferrule{
+        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+  }{
+        \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
+  }
+\end{mathpar}
 This section should pr\'{e}cis the project context, aims and objectives,
 and main contributions (e.g., deliverables) and achievements; the same 
 section may be called an abstract elsewhere.  The goal is to ensure the 
