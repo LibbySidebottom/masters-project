@@ -8,8 +8,19 @@
 $\Proc{M}$
 
 \begin{mathpar}
-  \inferrule{
-        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+      \inferH{Par}{
+            \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+      }{
+            \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
+      }
+\end{mathpar}
+
+The rule \ruleref{Par} does blahblah..
+
+\begin{mathpar}
+  \inferrule*[right=Par]{
+        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} \\
+        \text{second assumption\dots}
   }{
         \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
   }
