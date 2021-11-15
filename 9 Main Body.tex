@@ -2,58 +2,121 @@
 
 This is an example section; 
 the following content is auto-generated dummy text.
-\lipsum
 
 \subsection{Example Sub-section}
 
-\begin{figure}[t]
-\centering
-foo
-\caption{This is an example figure.}
-\label{fig}
-\end{figure}
+% \begin{figure}[t]
+% \centering
+% foo
+% \caption{This is an example figure.}
+% \label{fig}
+% \end{figure}
 
-\begin{table}[t]
-\centering
-\begin{tabular}{|cc|c|}
-\hline
-foo      & bar      & baz      \\
-\hline
-$0     $ & $0     $ & $0     $ \\
-$1     $ & $1     $ & $1     $ \\
-$\vdots$ & $\vdots$ & $\vdots$ \\
-$9     $ & $9     $ & $9     $ \\
-\hline
-\end{tabular}
-\caption{This is an example table.}
-\label{tab}
-\end{table}
+% \begin{table}[t]
+% \centering
+% \begin{tabular}{|cc|c|}
+% \hline
+% foo      & bar      & baz      \\
+% \hline
+% $0     $ & $0     $ & $0     $ \\
+% $1     $ & $1     $ & $1     $ \\
+% $\vdots$ & $\vdots$ & $\vdots$ \\
+% $9     $ & $9     $ & $9     $ \\
+% \hline
+% \end{tabular}
+% \caption{This is an example table.}
+% \label{tab}
+% \end{table}
 
-\begin{algorithm}[t]
-\For{$i=0$ {\bf upto} $n$}{
-  $t_i \leftarrow 0$\;
-}
-\caption{This is an example algorithm.}
-\label{alg}
-\end{algorithm}
+% \begin{algorithm}[t]
+% \For{$i=0$ {\bf upto} $n$}{
+%   $t_i \leftarrow 0$\;
+% }
+% \caption{This is an example algorithm.}
+% \label{alg}
+% \end{algorithm}
 
-\begin{lstlisting}[float={t},caption={This is an example listing.},label={lst},language=C]
-for( i = 0; i < n; i++ ) {
-  t[ i ] = 0;
-}
-\end{lstlisting}
+% \begin{lstlisting}[float={t},caption={This is an example listing.},label={lst},language=C]
+% for( i = 0; i < n; i++ ) {
+%   t[ i ] = 0;
+% }
+% \end{lstlisting}
 
-This is an example sub-section;
-the following content is auto-generated dummy text.
-Notice the examples in Figure~\ref{fig}, Table~\ref{tab}, Algorithm~\ref{alg}
-and Listing~\ref{lst}.
-\lipsum
+\begin{mathpar}
+  \inferH{Plus-L}{
+    \IsProc{P}{\Gamma, \Name{x} : A}
+  }{
+    \IsProc{\Inl{x}{P}}{\Gamma, \Name{x} : A \oplus B}
+  } \qquad
+  \inferH{Plus-R}{
+    \IsProc{P}{\Gamma, \Name{x} : B}
+  }{
+    \IsProc{\Inr{x}{P}}{\Gamma, \Name{x} : A \oplus B}
+  }
+   \qquad
+  \inferH{With}{
+    \IsProc{P}{\Gamma, \Name{x} : A} \\
+    \IsProc{Q}{\Gamma, \Name{x} : B}
+  }{
+    \IsProc{\Casep{x}{P}{Q}}{\Gamma, \Name{x} : A \with B}
+  }
+  \end{mathpar}
+
+\begin{mathpar}
+  \inferH{Tensor}{
+      \IsProc{P}{\Gamma, \Name{x} : A} \\
+      \IsProc{Q}{\Delta, \Name{y} : B}
+  }{
+      \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : A \otimes B}
+  } \qquad
+  \inferH{Par}{
+        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+  }{
+        \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
+  }\\
+  \inferH{}{
+        \inferH{}{
+              \IsProc{P}{\Gamma, \Name{x} : \negg{A}} \\
+              \IsProc{Q}{\Delta, \Name{y} : \negg{B}}
+        }{
+        \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : \negg{A} \otimes \negg{B}} \\
+  }\\
+        \inferH{}{
+               \IsProc{R}{\Theta, \Name{x} : A, \Name{y} : B}
+        }{
+               \IsProc{\In{y}{x}{R}}{\Theta, \Name{y} : A \parr B}
+        }
+      }{
+        \IsProc{\New*{y}{}{\Out{y}{x}{(P|Q)}|\In{y}{x}{R}}}{\Gamma, \Delta, \Theta}
+  }\\
+  \inferH{}{
+        \inferH{}{
+              \IsProc{P}{\Gamma, \Name{x} : \negg{A}} \\
+              \IsProc{R}{\Theta, \Name{x} : A, \Name{y}: B}
+        }{
+        \IsProc{\New*{x}{}{P|Q}}{\Gamma, \Theta, \Name{y} : B} \\
+  }\\
+        \inferH{}{
+        }{
+               \IsProc{Q}{\Delta, \Name{y} : \negg{B}}
+        }
+      }{
+        \IsProc{\New*{y}{}{\New*{x}{}{P|R}|Q}}{\Gamma, \Delta, \Theta}
+  }
+\end{mathpar}
+
+The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
+The rule \ruleref{Par} inputs A, then continues as B.
+
+% This is an example sub-section;
+% the following content is auto-generated dummy text.
+% Notice the examples in Figure~\ref{fig}, Table~\ref{tab}, Algorithm~\ref{alg}
+% and Listing~\ref{lst}.
 
 \subsubsection{Example Sub-sub-section}
 
 This is an example sub-sub-section;
 the following content is auto-generated dummy text.
-\lipsum
 
 \paragraph{Example paragraph.}
 
