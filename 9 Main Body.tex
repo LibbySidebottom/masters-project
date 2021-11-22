@@ -43,6 +43,24 @@ the following content is auto-generated dummy text.
 % \end{lstlisting}
 
 \begin{mathpar}
+  \inferH{Axiom}{
+  }{
+    \IsProc{\Link{x}{y}}{\Name{x} : \negg{A}, \Name{y} : A}
+  }\qquad
+  \inferH{Tensor}{
+      \IsProc{P}{\Gamma, \Name{x} : A} \\
+      \IsProc{Q}{\Delta, \Name{y} : B}
+  }{
+      \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : A \otimes B}
+  } \qquad
+  \inferH{Par}{
+        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+  }{
+        \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
+  }
+\end{mathpar}
+
+\begin{mathpar}
   \inferH{Plus-L}{
     \IsProc{P}{\Gamma, \Name{x} : A}
   }{
@@ -63,17 +81,35 @@ the following content is auto-generated dummy text.
   \end{mathpar}
 
 \begin{mathpar}
-  \inferH{Tensor}{
-      \IsProc{P}{\Gamma, \Name{x} : A} \\
-      \IsProc{Q}{\Delta, \Name{y} : B}
+  \inferH{Cut}{
+    \IsProc{P}{\Gamma, \Name{x} : \negg{A}}\\
+    \IsProc{Q}{\Gamma, \Name{x} : {A}}   
   }{
-      \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : A \otimes B}
-  } \qquad
-  \inferH{Par}{
-        \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+    \IsProc{\New*{x}{}{P|Q}}{\Gamma, \Delta}
+  }\qquad
+  \inferH{Weakening}{
+    \IsProc{P}{\Gamma}
   }{
-        \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
-  }\\
+    \IsProc{P}{\Gamma, \Name{x} : \whynot A}
+  }\qquad
+  \inferH{Contraction}{
+    \IsProc{P}{\Gamma, \Name{x} : \whynot A, \Name{y} : \whynot A}
+  }{
+    \IsProc{P \Out{}{x/y}{}}{\Gamma, \Name{x} : \whynot A}
+  }\qquad
+  \inferH{Dereliction}{
+    \IsProc{P}{\Gamma, \Name{x} : A}
+  }{
+    \IsProc{\Out{\whynot y}{x}{P}}{\Gamma, \Name{y} : \whynot A}
+  }\qquad
+  \inferH{Promotion}{
+    \IsProc{P}{\whynot \Gamma, \Name{x} : A}
+  }{
+    \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y} : \ofc A}
+  }
+\end{mathpar}
+
+\begin{mathpar}
   \inferH{}{
         \inferH{}{
               \IsProc{P}{\Gamma, \Name{x} : \negg{A}} \\
@@ -105,8 +141,12 @@ the following content is auto-generated dummy text.
   }
 \end{mathpar}
 
+The \ruleref{Axiom} states that if we have some variable A, then we also have its dual $\negg{A}$.
 The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
-The rule \ruleref{Par} inputs A, then continues as B.
+The rule \ruleref{Par} inputs A, then continues as B. 
+
+The \ruleref{Plus-L} indicates left selection, and similarly \ruleref{Plus-L} indicates right selection.
+The \ruleref{With} rule offers a choice between processes \Proc{P} and \Proc{Q}.
 
 % This is an example sub-section;
 % the following content is auto-generated dummy text.
