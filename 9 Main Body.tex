@@ -3,7 +3,7 @@
 This is an example section; 
 the following content is auto-generated dummy text.
 
-\subsection{Example Sub-section}
+\subsection{Classical Linear Logic}
 
 % \begin{figure}[t]
 % \centering
@@ -145,8 +145,16 @@ The \ruleref{Axiom} states that if we have some variable A, then we also have it
 The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
 The rule \ruleref{Par} inputs A, then continues as B. 
 
-The \ruleref{Plus-L} indicates left selection, and similarly \ruleref{Plus-L} indicates right selection.
+The rule \ruleref{Plus-L} indicates left selection, and similarly \ruleref{Plus-R} indicates right selection.
 The \ruleref{With} rule offers a choice between processes \Proc{P} and \Proc{Q}.
+
+The \ruleref{Cut} rule allows us to connect two dual processes together. \ruleref{Weakening} lets us
+consider a process which doesn't communicate or follow a protocol to be a process which communicates
+along a channel $\Name{x}$ with protocol \whynot A. 
+
+If a process \Proc{P} communicates along two channels, both following the same protocol \whynot A, 
+then we can use \ruleref{Contraction} to substitute one channel for another so \Proc{P} communicates 
+along only one channel following protocol \whynot A.
 
 % This is an example sub-section;
 % the following content is auto-generated dummy text.
@@ -162,5 +170,71 @@ the following content is auto-generated dummy text.
 
 This is an example paragraph; note the trailing full-stop in the title,
 which is intended to ensure it does not run into the text.
+
+\section{Translation}
+
+\begin{mathpar}
+{\Biggl\llbracket
+\inferH{}{
+}{
+  \Gamma \vdash \langle \rangle : 1
+}\Biggr\rrbracket}_{x}
+\EqDef
+\inferH{}{
+}{
+  \IsProc{\Casep{x}{}{}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+}
+
+{\Biggl\llbracket
+\inferH{}{
+  \Gamma \vdash M : A \\
+  \Gamma \vdash N : B
+}{
+  \Gamma \vdash \langle M, N \rangle : A \times B
+}\Biggr\rrbracket}_{x}
+\EqDef
+\inferH{}{
+  \IsProc{{\llbracket M \rrbracket}_\Name{x}}{\Gamma^{\circ}, \Name{x} : A^{\circ}} \\
+  \IsProc{{\llbracket N \rrbracket}_\Name{x}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+}{
+  \IsProc{\Casep{x}{{\llbracket M \rrbracket}_\Name{x}}{{\llbracket N \rrbracket}_\Name{x}}}{\Gamma^{\circ}, \Name{x} : A^{\circ} \with B^{\circ}}
+}
+
+{\Biggl\llbracket
+\inferH{}{
+  \Gamma \vdash M : A \times B
+}{
+  \Gamma \vdash \pi_{1} (M) : A
+}\Biggr\rrbracket}_{x}
+\EqDef
+\inferH{}{
+  \inferH{}{
+    \IsProc{\Link{x}{y}}{\Name{x} : A, \Name{y} : \negg{(A^{\circ})}}
+  }{
+  \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : A^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+}\\
+  \inferH{}{
+}{
+    \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+  }
+}
+{
+  \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}}|{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : A^{\circ}}
+}
+
+
+{\Biggl\llbracket 
+\inferH{}{
+  \Gamma, x :A \vdash M :B
+}{
+  \Gamma \vdash \lambda. x : A. M : A \rightarrow B
+} \Biggr\rrbracket}_{y}
+\EqDef
+\inferH{}{
+  \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{x} : \negg{(\ofc A^{\circ})}, \Name{y} : B^{\circ}}
+}{
+  \IsProc{\In{y}{x}{{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{y} : \negg{(\ofc A^{\circ})} \parr B^{\circ}}
+}
+\end{mathpar}
 
 % -----------------------------------------------------------------------------
