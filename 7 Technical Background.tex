@@ -1,25 +1,140 @@
 \chapter{Technical Background}
 \label{chap:technical}
 
-{\bf A compulsory chapter,     of roughly $10$ pages} 
-\vspace{1cm} 
+\section{The Simply Typed Lambda Calculus}
+
+\begin{figure}[h]
+    \begin{align*}
+        Types \quad \tau \quad ::= \quad & 1 &\text{unit} \\
+        & \tau_1 + \tau_2 &\text{sum} \\
+        & \tau_1 \times \tau_2 &\text{product} \\
+        & \tau_1 \rightarrow \tau_2 &\text{function} \\
+        \\
+        Terms \quad e \quad ::= \quad & x &\text{variable} \\
+        & inl(e) &\text{left injection} \\
+        & inr(e) &\text{right injection} \\
+        & case(e;x.e_1;y.e_2) &\text{case} \\
+        & \langle e_1, e_2 \rangle &\text{pair} \\
+        & \pi_1 (e) &\text{left projection} \\
+        & \pi_2 (e) &\text{right projection} \\
+        & \lambda x: \tau. e &\text{abstraction} \\
+        & e_1 (e_2) &\text{application}
+    \end{align*}
+    \caption{Types and Terms for the Simply Typed Lambda Calculus}
+    \label{fig: tt stlc}
+\end{figure}
 
 \noindent
-This chapter is intended to describe the technical basis on which execution
-of the project depends.  The goal is to provide a detailed explanation of
-the specific problem at hand, and existing work that is relevant (e.g., an
-existing algorithm that you use, alternative solutions proposed, supporting
-technologies).  
+The Simply Typed Lambda Calculus is a language for working with functions. If we have some typing
+relation $\Gamma \vdash x: \sigma$ this means that in the context $\Gamma$, $x$ has type $\sigma$,
+and $x$ is said to be well-typed. We can see from \ref{fig: tt stlc} that we have three composite
+types and terms can take on specific forms, the rules for which are shown in \ref{fig: r stlc}. The
+sum type is used to represent disjoint union so if $\Gamma \vdash x: \tau_1 + \tau_2$ then the type 
+of $x$ is either $\tau_1$ or $\tau_2$. The product type is used to represent pairs, so if we have
+$\Gamma \vdash \langle e_1, e_2 \rangle : \tau_1 \times \tau_2$ then we know that we have both 
+$e_1: \tau_1$ and $e_2: \tau_2$. Finally, the function type is of course used to represent functions
+so if we have $\Gamma \vdash \lambda x: \sigma: \sigma \rightarrow \tau$ then this is equivalent to 
+having some function $f : \sigma \rightarrow \tau$ so we must have that $x: \sigma$ and $f(x): \tau$. 
+So our function $f$ takes in some parameter of type $\sigma$ and outputs a result with type $\tau$.
+\\
+\begin{figure}[h]
+    \begin{mathpar}
+        \inferH{Var}{
+        }{
+            \Gamma, x: \sigma \vdash x: \sigma
+        }\qquad
+        \inferH{Unit}{
+        }{
+            \Gamma \vdash \langle \rangle : 1
+        }\\
+        \inferH{In-l}{
+            \Gamma \vdash e: \tau_1
+        }{
+            \Gamma \vdash inl(e): \tau_1 + \tau_2
+        }\qquad
+        \inferH{In-r}{
+            \Gamma \vdash e: \tau_2
+        }{
+            \Gamma \vdash inl(e): \tau_1 + \tau_2
+        }\qquad
+        \inferH{Case}{
+            \Gamma \vdash e: \tau_1 + \tau_2 \\
+            \Gamma, x: \tau_1 \vdash e_1: \tau \\
+            \Gamma, y: \tau_2 \vdash e_2: \tau
+        }{
+            \Gamma \vdash case(e;x.e_1;y.e_2): \tau
+        }\\
+        \inferH{Pair}{
+            \Gamma \vdash e_1: \tau_1 \\
+            \Gamma \vdash e_2: \tau_2
+        }{
+            \Gamma \vdash \langle e_1, e_2 \rangle : \tau_1 \times \tau_2
+        }\qquad
+        \inferH{Prj-l}{
+            \Gamma \vdash e: \tau_1 \times \tau_2
+        }{
+            \Gamma \vdash \pi_1 (e): \tau_1
+        }\qquad
+        \inferH{Prj-r}{
+            \Gamma \vdash e: \tau_1 \times \tau_2
+        }{
+            \Gamma \vdash \pi_2 (e): \tau_2
+        }\\
+        \inferH{Abs}{
+            \Gamma, x: \sigma \vdash e: \tau
+        }{
+            \Gamma \vdash \lambda x: \sigma. e: \sigma \rightarrow \tau
+        }\qquad
+        \inferH{App}{
+            \Gamma \vdash e_1: \sigma \rightarrow \tau \\
+            \Gamma \vdash e_2: \sigma
+        }{
+            \Gamma \vdash e_1 (e_2): \tau
+        }\\
+    \end{mathpar}
+    \caption{Rules for the Simply Typed Lambda Calculus}
+    \label{fig: r stlc}
+\end{figure}
 
-Per the same advice in the handbook, note there is a subtly difference from
-this and a full-blown literature review (or survey).  The latter might try
-to capture and organise (e.g., categorise somehow) {\em all} related work,
-potentially offering meta-analysis, whereas here the goal is simple to
-ensure the dissertation is self-contained.  Put another way, after reading 
-this chapter a non-expert reader should have obtained enough background to 
-understand what {\em you} have done (by reading subsequent sections), then 
-accurately assess your work.  You might view an additional goal as giving 
-the reader confidence that you are able to absorb, understand and clearly 
-communicate highly technical material.
+\noindent
+The rules in \ref{fig: r stlc} have premises on the top and conclusions on the bottom. So for any rule
+we know that if we have everything on top of the line, then we can conclude anything below the line.
+We take a constructor to be a rule which can create something of a certain type, and a destructor to be 
+a rule which 'reduces' something of that type to a 'simpler' type.
+
+The \ruleref{Var} rule simply states that if we have $x$ of type $\sigma$ in some environment $\Gamma$, 
+then we know $x: \sigma$. The \ruleref{Unit} rule states that if we have an empty pair, then this has 
+the unit type: 1. \ruleref{In-r} is a constructor for the sum type which allows us to use injection 
+to derive $inl(e)$ has type $\tau_1 + \tau_2$ given that $e$ has type $\tau_1$, and similarly for 
+\ruleref{In-r}. The \ruleref{Case} rule is the destructor for the sum type which branches on either
+side depending on the specific instance given. %???? strange explanation%
+The \ruleref{Pair} rule allows us to construct a product type $\tau_1 \times \tau_2$ given two variables
+with each of those types. \ruleref{Prj-l} destructs some pair with a product type $\tau_1 \times \tau_2$ 
+into a variable with type $\tau_1$, and similarly \ruleref{Prj-r} will destruct the pair into a variable 
+with type $\tau_2$. 
+The \ruleref{Abs} rule refers to lambda abstraction and is a constructor for the product type. It allows
+us to create a function $\lambda x. e : \sigma \rightarrow \tau$ if we can obtain some $e$ of type $\tau$
+from $\Gamma$ and $x: \sigma$. The \ruleref{App} rule is the destructor of the function type - function 
+application. If we have some function $e_1: \sigma \rightarrow \tau$ and some variable $e_2$ of type 
+$\sigma$ then we can apply the function $e_1$ to $e_2$ and obtain a result with type $\tau$.
+
+
+% \noindent
+% This chapter is intended to describe the technical basis on which execution
+% of the project depends.  The goal is to provide a detailed explanation of
+% the specific problem at hand, and existing work that is relevant (e.g., an
+% existing algorithm that you use, alternative solutions proposed, supporting
+% technologies).  
+
+% Per the same advice in the handbook, note there is a subtly difference from
+% this and a full-blown literature review (or survey).  The latter might try
+% to capture and organise (e.g., categorise somehow) {\em all} related work,
+% potentially offering meta-analysis, whereas here the goal is simple to
+% ensure the dissertation is self-contained.  Put another way, after reading 
+% this chapter a non-expert reader should have obtained enough background to 
+% understand what {\em you} have done (by reading subsequent sections), then 
+% accurately assess your work.  You might view an additional goal as giving 
+% the reader confidence that you are able to absorb, understand and clearly 
+% communicate highly technical material.
 
 % -----------------------------------------------------------------------------

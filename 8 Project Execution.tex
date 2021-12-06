@@ -1,39 +1,442 @@
 \chapter{Project Execution}
 \label{chap:execution}
 
-{\bf A topic-specific chapter, of roughly $15$ pages} 
-\vspace{1cm} 
+\section{Classical Linear Logic}
+
+Classical linear logic (CLL) is a sequent calculus which differs from classical logic in a few ways.
+The first is that we replace the usual two-sided sequent with a one-sided sequent, so $A_1, A_2, ...,
+A_n \vdash B_1, B_2, ..., B_m$ becomes $\vdash \negg{A_1}, \negg{A_2}, ..., \negg{A_n}, B_1, B_1, ..., 
+B_m$ which makes CLL slightly easier to read as we don't have to worry about propositions on the left-
+hand side of our sequent. As we can see from our new one-sided sequent, we now also have linear negation.
+In classical linear logic variables are denoted by capital letters $A, B, ...$ and the duals to these 
+variables are denoted $\negg{A}, \negg{B}, ...$ where $\negg{A}$ is the negation of A such that 
+$\negg{\negg{A}} = A$. This negation is not present in intuitionistic linear logic, but is a large part 
+of classical linear logic and all propositions have a dual. 
+
+We also have that any proposition must be used exactly as many times as it appears. We cannot have some 
+proposition A and not make use of it, and similarly we cannot use it any more than once if it only appears 
+once. 
+
+Our propositions for CLL are as follows:
+
+\begin{figure}[h]
+  \begin{align*}
+      & X &\text{variable} \\
+      & \negg{X} &\text{variable dual} \\
+      & A \otimes B &\text{tensor} \\
+      & A \parr B &\text{par} \\
+      & A \oplus B &\text{plus} \\
+      & A \with B &\text{with} \\
+      & \ofc A &\text{of course} \\
+      & \whynot A &\text{why not} \\
+      & 1 &\text{tensor unit} \\
+      & \bot &\text{par unit} \\
+      & 0 &\text{plus unit} \\
+      & \top &\text{with unit} \\
+  \end{align*}
+  \caption{Propositions for Classical Linear Logic}
+  \label{fig: p cll}
+\end{figure}
 
 \noindent
-This chapter is intended to describe what you did: the goal is to explain
-the main activity or activities, of any type, which constituted your work 
-during the project.  The content is highly topic-specific, but for many 
-projects it will make sense to split the chapter into two sections: one 
-will discuss the design of something (e.g., some hardware or software, or 
-an algorithm, or experiment), including any rationale or decisions made, 
-and the other will discuss how this design was realised via some form of 
-implementation.  
+As we can see from \ref{fig: p cll}
+we have six main forms for propositions. The tensor: $A \otimes B$ represents multiplicative conjunction 
+and means "output A, then continue as B". The dual to tensor is par which represents multiplicative 
+disjunction. We would read $A \parr B$ as "input A, then continue as B". We have plus for additive 
+disjunction so $A \oplus B$ means "select either A or B". Dual to this we have with: $A \with B$ meaning 
+"offer a choice between A and B". Our exponential component consists of of course and why not, where 
+$\ofc A$ means we have a server which can accept many copies of A, and $\whynot A$ means we have a client 
+who may request many copies of A. 
 
-This is, of course, far from ideal for {\em many} project topics.  Some
-situations which clearly require a different approach include:
+It is important to note that every proposition has a dual, specifically:
 
-\begin{itemize}
-\item In a project where asymptotic analysis of some algorithm is the goal,
-      there is no real ``design and implementation'' in a traditional sense
-      even though the activity of analysis is clearly within the remit of
-      this chapter.
-\item In a project where analysis of some results is as major, or a more
-      major goal than the implementation that produced them, it might be
-      sensible to merge this chapter with the next one: the main activity 
-      is such that discussion of the results cannot be viewed separately.
-\end{itemize}
+\begin{align*}
+  \negg{(A \otimes B)} &= \negg{A} \parr \negg{B} \\
+  \negg{(A \oplus B)} &= \negg{A} \with \negg{B} \\
+  \negg{(\ofc A)} &= \whynot \negg{A}
+\end{align*}
 
 \noindent
-Note that it is common to include evidence of ``best practice'' project 
-management (e.g., use of version control, choice of programming language 
-and so on).  Rather than simply a rote list, make sure any such content 
-is useful and/or informative in some way: for example, if there was a 
-decision to be made then explain the trade-offs and implications 
-involved.
+Classical linear logic naturally lends itself to parallelism, so we present the rules of CLL 
+alongside a process calculus similar to $\pi$ calculus. The processes for this are as follows:
+
+\begin{figure}[h]
+  \begin{align*}
+    & \Proc{P} & \text{process \Proc{P}} \\
+    & \Proc{\Link{x}{y}} & \text{link \Name{x} with \Name{y}} \\
+    & \Proc{\Out{y}{x}{(P \mathbin{|} Q)}} & \text{output on channel \Name{y}} \\
+    & \Proc{\In{y}{x}{P}} & \text{input on channel {y}} \\
+    & \Proc{\Inl{x}{P}} & \text{left selection} \\
+    & \Proc{\Inr{x}{P}} & \text{right selection} \\
+    & \Proc{\Casep{x}{P}{Q}} & \text{choice} \\
+    & \Proc{\New*{x}{}{P|Q}} & \text{connect on channel \Name{x}} 
+  \end{align*}
+  \caption{Processes}
+  \label{fig: p cp}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{mathpar}
+    \inferH{Axiom}{
+    }{
+      \IsProc{\Link{x}{y}}{\Name{x} : \negg{A}, \Name{y} : A}
+    }\qquad
+    \inferH{Tensor}{
+        \IsProc{P}{\Gamma, \Name{x} : A} \\
+        \IsProc{Q}{\Delta, \Name{y} : B}
+    }{
+        \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : A \otimes B}
+    } \qquad
+    \inferH{Par}{
+          \IsProc{P}{\Gamma, \Name{x} : A, \Name{y} : B} 
+    }{
+          \IsProc{\In{y}{x}{P}}{\Gamma, \Name{y} : A \parr B}
+    }
+  \end{mathpar}
+
+  \begin{mathpar}
+    \inferH{Plus-L}{
+      \IsProc{P}{\Gamma, \Name{x} : A}
+    }{
+      \IsProc{\Inl{x}{P}}{\Gamma, \Name{x} : A \oplus B}
+    } \qquad
+    \inferH{Plus-R}{
+      \IsProc{P}{\Gamma, \Name{x} : B}
+    }{
+      \IsProc{\Inr{x}{P}}{\Gamma, \Name{x} : A \oplus B}
+    }
+    \qquad
+    \inferH{With}{
+      \IsProc{P}{\Gamma, \Name{x} : A} \\
+      \IsProc{Q}{\Gamma, \Name{x} : B}
+    }{
+      \IsProc{\Casep{x}{P}{Q}}{\Gamma, \Name{x} : A \with B}
+    }
+    \end{mathpar}
+
+  \begin{mathpar}
+    \inferH{Cut}{
+      \IsProc{P}{\Gamma, \Name{x} : \negg{A}}\\
+      \IsProc{Q}{\Gamma, \Name{x} : {A}}   
+    }{
+      \IsProc{\New*{x}{}{P|Q}}{\Gamma, \Delta}
+    }\qquad
+    \inferH{Weakening}{
+      \IsProc{P}{\Gamma}
+    }{
+      \IsProc{P}{\Gamma, \Name{x} : \whynot A}
+    }\qquad
+    \inferH{Contraction}{
+      \IsProc{P}{\Gamma, \Name{x} : \whynot A, \Name{y} : \whynot A}
+    }{
+      \IsProc{P \Out{}{x/y}{}}{\Gamma, \Name{x} : \whynot A}
+    }\\
+    \inferH{Dereliction}{
+      \IsProc{P}{\Gamma, \Name{x} : A}
+    }{
+      \IsProc{\Out{\whynot y}{x}{P}}{\Gamma, \Name{y} : \whynot A}
+    }\qquad
+    \inferH{Promotion}{
+      \IsProc{P}{\whynot \Gamma, \Name{x} : A}
+    }{
+      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y} : \ofc A}
+    }
+  \end{mathpar}
+  \caption{Rules for Classical Linear Logic with Process Calculus}
+  \label{fig: r cll cp}
+\end{figure}
+
+
+\begin{mathpar}
+  \inferH{}{
+        \inferH{}{
+              \IsProc{P}{\Gamma, \Name{x} : \negg{A}} \\
+              \IsProc{Q}{\Delta, \Name{y} : \negg{B}}
+        }{
+        \IsProc{\Out{y}{x}{(P|Q)}}{\Gamma, \Delta, \Name{y} : \negg{A} \otimes \negg{B}} \\
+  }\\
+        \inferH{}{
+               \IsProc{R}{\Theta, \Name{x} : A, \Name{y} : B}
+        }{
+               \IsProc{\In{y}{x}{R}}{\Theta, \Name{y} : A \parr B}
+        }
+      }{
+        \IsProc{\New*{y}{}{\Out{y}{x}{(P|Q)}|\In{y}{x}{R}}}{\Gamma, \Delta, \Theta}
+  }\\
+  \inferH{}{
+        \inferH{}{
+              \IsProc{P}{\Gamma, \Name{x} : \negg{A}} \\
+              \IsProc{R}{\Theta, \Name{x} : A, \Name{y}: B}
+        }{
+        \IsProc{\New*{x}{}{P|Q}}{\Gamma, \Theta, \Name{y} : B} \\
+  }\\
+        \inferH{}{
+        }{
+               \IsProc{Q}{\Delta, \Name{y} : \negg{B}}
+        }
+      }{
+        \IsProc{\New*{y}{}{\New*{x}{}{P|R}|Q}}{\Gamma, \Delta, \Theta}
+  }
+\end{mathpar}
+
+The \ruleref{Axiom} states that if we have some variable A, then we also have its dual $\negg{A}$.
+The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
+The rule \ruleref{Par} inputs A, then continues as B. 
+
+The rule \ruleref{Plus-L} indicates left selection, and similarly \ruleref{Plus-R} indicates right selection.
+The \ruleref{With} rule offers a choice between processes \Proc{P} and \Proc{Q}.
+
+The \ruleref{Cut} rule allows us to connect two dual processes together. \ruleref{Weakening} lets us
+consider a process which doesn't communicate or follow a protocol to be a process which communicates
+along a channel $\Name{x}$ with protocol \whynot A. 
+
+If a process \Proc{P} communicates along two channels, both following the same protocol \whynot A, 
+then we can use \ruleref{Contraction} to substitute one channel for another so \Proc{P} communicates 
+along only one channel following protocol \whynot A.
+
+% This is an example sub-section;
+% the following content is auto-generated dummy text.
+% Notice the examples in Figure~\ref{fig}, Table~\ref{tab}, Algorithm~\ref{alg}
+% and Listing~\ref{lst}.
+
+% \subsubsection{Example Sub-sub-section}
+
+% This is an example sub-sub-section;
+% the following content is auto-generated dummy text.
+
+% \paragraph{Example paragraph.}
+
+% This is an example paragraph; note the trailing full-stop in the title,
+% which is intended to ensure it does not run into the text.
+
+\section{Translation}
+
+Here we present a translation from the simply typed lambda calculus into classical linear logic. First 
+we will give the direct translation of each type, then a detailed derivation of how we got there. We 
+make use of the $^{\circ}$ symbol to denote a translation. On the left hand side we have the lambda 
+calculus type, and on the right we have its classical linear logic translation.
+
+\begin{align*}
+    (1)^\circ &= \top^\circ \\
+    (A + B)^\circ &= A^\circ \oplus B^\circ \\
+    (A \times B)^\circ &= A^\circ \otimes B^\circ \\
+    (A \rightarrow B)^\circ &= \negg{(\ofc A^\circ)} \parr B^\circ
+\end{align*}
+
+The translation of some environment $\Gamma$ are as follows:
+
+\begin{align*}
+  \Gamma^\circ & \\
+  (\cdot)^\circ &= \cdot \\
+  (\Gamma, x:A)^\circ &= \Gamma^\circ, x: \negg{(\ofc A^\circ)} \\
+   &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
+\end{align*}
+
+\begin{mathpar}
+    %var
+    {\Biggl\llbracket
+    \inferH{}{
+    }{
+        \Gamma, x: \sigma \vdash x: \sigma
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+        \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x}: \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }{
+            \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }
+    }{
+        \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Gamma^\circ \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+    }\\
+
+    %unit
+    {\Biggl\llbracket
+    \inferH{}{
+    }{
+    \Gamma \vdash \langle \rangle : 1
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+    }{
+    \IsProc{\Casep{x}{}{}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+    }\\
+
+    %left injection
+    {\Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash M:A
+    }{
+      \Gamma \vdash inl(M): A+B
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\vdash \Gamma^\circ, \Name{x}: A^\circ}
+    }{
+      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+    }\\
+
+    %right injection
+    {\Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash M:B
+    }{
+      \Gamma \vdash inl(M): A+B
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\vdash \Gamma^\circ, \Name{x}: B^\circ}
+    }{
+      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+    }\\
+
+    %case
+    \Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash R: A+B \\
+      \Gamma, M:A \vdash P:C \\
+      \Gamma, N:B \vdash Q:C
+    }{
+      \Gamma \vdash case(R;M.P;N.Q):C
+    }\Biggr\rrbracket_\Name{x}
+    \EqDef
+
+    %product
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \\
+    \Gamma \vdash N : B
+    }{
+    \Gamma \vdash \langle M, N \rangle : A \times B
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : A^{\circ}} \\
+    \IsProc{\llbracket N \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+    }{
+    \IsProc{\Casep{x}{{\llbracket M \rrbracket}_\Name{x}}{{\llbracket N \rrbracket}_\Name{x}}}{\Gamma^{\circ}, \Name{x} : A^{\circ} \with B^{\circ}}
+    }\\
+
+    %left projection
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \times B
+    }{
+    \Gamma \vdash \pi_{1} (M) : A
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x} : A, \Name{y} : \negg{(A^{\circ})}}
+    }{
+    \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : A^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+    }\\
+    \inferH{}{
+    }{
+        \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+    }}{
+    \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}}|{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : A^{\circ}}
+    }\\
+
+    %right projection
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \times B
+    }{
+    \Gamma \vdash \pi_{2} (M) : B
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x} : B, \Name{y} : \negg{(B^{\circ})}}
+    }{
+    \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : B^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+    }\\
+    \inferH{}{
+    }{
+        \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+    }}{
+    \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}}|{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+    }\\
+
+    %lambda abstraction
+    {\Biggl\llbracket 
+    \inferH{}{
+    \Gamma, x :A \vdash M :B
+    }{
+    \Gamma \vdash \lambda. x : A. M : A \rightarrow B
+    } \Biggr\rrbracket}_{\Name{y}}
+    \EqDef
+    \inferH{}{
+    \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{x} : \negg{(\ofc A^{\circ})}, \Name{y} : B^{\circ}}
+    }{
+    \IsProc{\In{y}{x}{{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{y} : \negg{(\ofc A^{\circ})} \parr B^{\circ}}
+    }\\
+
+    %application
+    \Biggl\llbracket 
+    \inferH{}{
+      \Gamma \vdash M:A \rightarrow B \\
+      \Gamma \vdash N:A
+    }{
+      \Gamma \vdash MN:B
+    }\Biggr\rrbracket_\Name{y}
+    \EqDef
+    \inferH{}{
+      \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)} \parr B^\circ}
+      }{
+        \IsProc{depar}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
+      }\\
+      \inferH{}{
+        \IsProc{\llbracket N \rrbracket_\Name{y}}{\Gamma^\dagger, \Name{y^\dagger}: A^\circ}
+      }{
+        \IsProc{\In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
+      }
+    }{
+      \IsProc{\New*{x}{}{depar \mathbin{|} \In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
+    }
+\end{mathpar}
+
+
+
+
+
+
+
+% {\bf A topic-specific chapter, of roughly $15$ pages} 
+% \vspace{1cm} 
+
+% \noindent
+% This chapter is intended to describe what you did: the goal is to explain
+% the main activity or activities, of any type, which constituted your work 
+% during the project.  The content is highly topic-specific, but for many 
+% projects it will make sense to split the chapter into two sections: one 
+% will discuss the design of something (e.g., some hardware or software, or 
+% an algorithm, or experiment), including any rationale or decisions made, 
+% and the other will discuss how this design was realised via some form of 
+% implementation.  
+
+% This is, of course, far from ideal for {\em many} project topics.  Some
+% situations which clearly require a different approach include:
+
+% \begin{itemize}
+% \item In a project where asymptotic analysis of some algorithm is the goal,
+%       there is no real ``design and implementation'' in a traditional sense
+%       even though the activity of analysis is clearly within the remit of
+%       this chapter.
+% \item In a project where analysis of some results is as major, or a more
+%       major goal than the implementation that produced them, it might be
+%       sensible to merge this chapter with the next one: the main activity 
+%       is such that discussion of the results cannot be viewed separately.
+% \end{itemize}
+
+% \noindent
+% Note that it is common to include evidence of ``best practice'' project 
+% management (e.g., use of version control, choice of programming language 
+% and so on).  Rather than simply a rote list, make sure any such content 
+% is useful and/or informative in some way: for example, if there was a 
+% decision to be made then explain the trade-offs and implications 
+% involved.
 
 % -----------------------------------------------------------------------------
