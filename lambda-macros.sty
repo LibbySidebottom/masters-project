@@ -1,106 +1,92 @@
-
-\definecolor{Matterhorn}{RGB}{70,45,68}
-\definecolor{Cowboy}{RGB}{86,47,50}
-
+\NewDocumentCommand{\defeq}{}{\stackrel{\mathclap{\mbox{\tiny def}}}{=}}
+\NewDocumentCommand{\alert}{m}{{\color{red}{#1}}}
 \definecolor{RegalBlue}{RGB}{3,69,117}
-\definecolor{RedDevil}{RGB}{134,1,17}
+\NewDocumentCommand{\Meta}{m}{{\color{IdiotPurple}{#1}}}
+\NewDocumentCommand{\Tm}{m}{{\color{RegalBlue}{#1}}}
+\NewDocumentCommand{\Deriv}{m}{{\color{DogwoodRose}{#1}}}
+\NewDocumentCommand{\Comm}{m}{{\color{CommandPurple}{#1}}}
+\NewDocumentCommand{\Locc}{m}{{\color{FernGreen}{#1}}}
 
-\definecolor{IdiotPurple}{RGB}{102, 51, 102}
-\definecolor{FernGreen}{HTML}{467D5E}
-\definecolor{ThroneBlue}{RGB}{51, 51, 102}
-\definecolor{PermaRed}{RGB}{255, 102, 102}
-\definecolor{DogwoodRose}{HTML}{cc3366}
-\definecolor{MaizeCrayola}{RGB}{255, 204, 102}
-\definecolor{Black}{RGB}{0, 0, 0}
+% MACROS FOR INDUCTIVE PROOFS
+\newlist{indproof}{itemize}{5}
+\setlist[indproof]{%
+%  topsep=30pt,  % space before start / after end of list
+  itemsep=5pt,  % space between items
+  leftmargin=5pt,
+  listparindent=10pt,
+  font={\sc}, % set the label font
+  label={}
+}
+\newcommand{\indcase}[1]{\item{Case}(#1).}
 
-\def\ProgColor{Cowboy}
+% Week 1: Judgements and Induction
 
-% \Progparens{M} yields parentheses with program color
-\NewDocumentCommand{\Progparens}{m}{{\textcolor{\ProgColor}{(}}#1{\textcolor{\ProgColor}{)}}}
+\NewDocumentCommand{\Zero}{}{\textsf{zero}}
+\NewDocumentCommand{\Succ}{m}{\textsf{succ}(#1)}
+\NewDocumentCommand{\IsNat}{m}{#1\ \textsf{nat}}
 
-\NewDocumentCommand{\IfProgparens}{mm}{\IfBooleanTF{#1}{\Progparens{#2}}{#2}}
+\NewDocumentCommand{\IsEven}{m}{#1\ \textsf{even}}
+\NewDocumentCommand{\IsOdd}{m}{#1\ \textsf{odd}}
 
-\NewDocumentCommand{\Prog}{m}{{\textcolor{\ProgColor}{#1}}}
-\NewDocumentCommand{\Progsf}{m}{{\Prog{\textsf{#1}}}}
+\NewDocumentCommand{\IsSum}{mmm}{\textsf{sum}(#1, #2, #3)}
+\NewDocumentCommand{\IsList}{m}{#1\ \textsf{list}}
+\NewDocumentCommand{\Nil}{}{\textsf{nil}}
+\NewDocumentCommand{\Cons}{mm}{\textsf{cons}(#1, #2)}
 
-% star version of \IsProg gives alignment before \vdash
-\NewDocumentCommand{\IsProg}{smmm}{\Type{#2} \IfBooleanTF{#1}{&}{} \vdash \Prog{#3} : \Type{#4}}
+% Week 2: Simple expressions
 
-% \bra* for types
-% \bra for terms
-\NewDocumentCommand{\bra}{som}{
-  \textcolor{Black}{\llbracket}
-    \IfBooleanTF{#1}{#3}{\Prog{#3}}
-  \textcolor{Black}{\rrbracket}
-    \IfNoValueF{#2}{_\Name{#2}}
+\NewDocumentCommand{\IsTerm}{O{\Gamma}mm}{#1 \vdash \Tm{#2} : #3}
+\NewDocumentCommand{\IsAlignedTerm}{O{\Gamma}mm}{#1 &\vdash \Tm{#2} : #3}
+
+\NewDocumentCommand{\NumT}{}{\textsf{Num}}
+\NewDocumentCommand{\StrT}{}{\textsf{Str}}
+\NewDocumentCommand{\Num}{m}{\textsf{num}[#1]}
+\NewDocumentCommand{\Str}{m}{\textsf{str}[#1]}
+
+\NewDocumentCommand{\Plus}{mm}{\textsf{plus}(#1; #2)}
+\NewDocumentCommand{\Times}{mm}{\textsf{times}(#1; #2)}
+\NewDocumentCommand{\ConcatA}{mm}{\textsf{cat}(#1; #2)}
+\NewDocumentCommand{\Concat}{mm}{#1 \mathbin{{+}\mspace{-8mu}{+}} #2}
+\NewDocumentCommand{\Length}{m}{\textsf{len}(#1)}
+\NewDocumentCommand{\LetA}{mmm}{\textsf{let}(#1; #2.\, #3)}
+\NewDocumentCommand{\Let}{mmm}{\textsf{let}\, #1 \Leftarrow #2\, \textsf{in}\, #3}
+
+\NewDocumentCommand{\Subst}{smmm}{
+  \IfBooleanTF{#1}{\parens{\Tm{#2}}}{\Tm{#2}}\Meta{[\Tm{#3}/\Tm{#4}]}
 }
 
-\DeclarePairedDelimiter\sem{\llbracket}{\rrbracket}
-\NewDocumentCommand{\Trans}{mo}{
-  \sem*{#1}\IfNoValueF{#2}{_\Name{#2}}
+% Week 3: operational semantics
+
+\NewDocumentCommand{\IsVal}{m}{\Tm{#1}\ \textsf{val}}
+\NewDocumentCommand{\Step}{}{\longmapsto}
+\NewDocumentCommand{\StepMany}{}{\mathbin{{\Step}^\ast}}
+\NewDocumentCommand{\StepsTo}{mm}{\Tm{#1} \Step \Tm{#2}}
+\NewDocumentCommand{\StepsMany}{mm}{\Tm{#1} \StepMany \Tm{#2}}
+\NewDocumentCommand{\Eval}{mm}{\Tm{#1} \mathbin{\Downarrow} \Tm{#2}}
+
+% Week 4: STLC
+
+\NewDocumentCommand{\Tuple}{mm}{\langle #1, #2 \rangle}
+\NewDocumentCommand{\Proj}{O{1}m}{\pi_{#1}(#2)}
+\NewDocumentCommand{\Inl}{m}{\textsf{inl}(#1)}
+\NewDocumentCommand{\Inr}{m}{\textsf{inr}(#1)}
+\NewDocumentCommand{\Case}{mmmmm}{\textsf{case}(#1; #2.\, #3; #4.\, #5)}
+
+\NewDocumentCommand{\Unit}{}{\mathbf{1}}
+\NewDocumentCommand{\UnitV}{}{\langle\rangle}
+\NewDocumentCommand{\Void}{}{\mathbf{0}}
+\NewDocumentCommand{\Abort}{m}{\textsf{abort}(#1)}
+
+\NewDocumentCommand{\DeclVar}{mm}{#1\mathbin{:}#2}
+
+% \Lam{x}{e}    produces λx. e
+% \Lam{x}[t]{e} produces λx : t. e
+\NewDocumentCommand{\Lam}{mom}{
+  \lambda 
+    \IfNoValueTF{#2}{#1}{\DeclVar{#1}{#2}}
+  .\, #3
 }
 
-% types
-\NewDocumentCommand{\unit}{}{\textsf{unit}}
-
-\NewDocumentCommand{\send}{}{\textrm{!}}
-\NewDocumentCommand{\recv}{}{\textrm{?}}
-
-\NewDocumentCommand{\Lam}{smm}{\Prog{\lambda \Name{#2}.\,\IfProgparens{#1}{#3}}}
-\NewDocumentCommand{\Jux}{mm}{\Prog{#1 #2}}
-\NewDocumentCommand{\Pair}{mm}{\Prog{(#1, #2)}}
-\NewDocumentCommand{\Let}{mm}{\Prog{\textsf{let} \; \Name{#1} \; = \;  \Prog{#2} \; \textsf{in}}}
-\NewDocumentCommand{\LetP}{mmm}{\Let{\Pair{\Name{#1}}{\Name{#2}}}{#3}}
-\NewDocumentCommand{\Send}{smm}{\IfProgparens{#1}{\Prog{\textsf{send} \; #2 \; #3}}}
-\NewDocumentCommand{\Recv}{sm}{\IfProgparens{#1}{\Prog{\textsf{recv} \; #2}}}
-\NewDocumentCommand{\Conn}{mmmm}{\Prog{\textsf{connect}(\Name{#1}.\, #2; \Name{#3}.\, #4)}}
-\NewDocumentCommand{\Term}{sm}{\Prog{\textsf{terminate} \; \IfProgparens{#1}{#2}}}
-\NewDocumentCommand{\Unit}{}{\Prog{\star}}
-\NewDocumentCommand{\Left}{sm}{\IfProgparens{#1}{\Prog{\textsf{inl} \; #2}}}
-\NewDocumentCommand{\Right}{sm}{\IfProgparens{#1}{\Prog{\textsf{inr} \; #2}}}
-\NewDocumentCommand{\Match}{mmmm}{\Prog{\textsf{match} \; #1 \; \textsf{with} \; \Name{#2}.\{ #3, #4\}}}
-\NewDocumentCommand{\SelectL}{sm}{\Prog{\IfProgparens{#1}{\textsf{select}_{L} \; #2}}}
-\NewDocumentCommand{\SelectR}{sm}{\Prog{\IfProgparens{#1}{\textsf{select}_{R} \; #2}}}
-\NewDocumentCommand{\SCase}{smmmm}{\Prog{\textsf{case} \; #2 \; \textsf{of} \; \Name{#3}.\{#4,#5\}}}
-\NewDocumentCommand{\IfThen}{m}{\Deriv{\textsf{if} \; \Prog{#1} \; \textsf{then}}}
-\NewDocumentCommand{\Else}{}{\Deriv{\textsf{else}}}
-
-\NewDocumentCommand{\endm}{}{\textsf{end}_!}
-\NewDocumentCommand{\endp}{}{\textsf{end}_?}
-
-
-\NewDocumentCommand{\boo}{}{\Type{\mathbb{B}}}
-\NewDocumentCommand{\True}{}{\Deriv{\textsf{tt}}}
-\NewDocumentCommand{\False}{}{\Deriv{\textsf{ff}}}
-
-\NewDocumentCommand{\nat}{}{\Type{\mathbb{N}}}
-\NewDocumentCommand{\Zero}{}{\Namesf{zero}}
-\NewDocumentCommand{\Succ}{}{\Namesf{succ}}
-
-\NewDocumentCommand{\Serv}{smmmmmm}{
-  \IfBooleanTF{#1}{
-  \Deriv{
-    \textsf{serve'} \; \Name{#2} \{ \Prog{#3}, \Name{#4}.\, \Prog{#5}, \Name{#6}.\, \Prog{#7}  \}
-  }
-}{
-  \Prog{
-    \textsf{serve} \; \Name{#2} \{ \Prog{#3}, \Name{#4}.\, \Prog{#5}, \Name{#6}.\, \Prog{#7}  \}
-  }
-}
-}
-
-\NewDocumentCommand{\Inv}{mm}{
-  \Deriv{\textsf{inv}_{\Name{#1}}(\Prog{#2})}
-}
-
-\NewDocumentCommand{\ForkJoin}{mmmm}{
-\Deriv{\textsf{fork-join}(\Prog{#1}, \Prog{#2}, \Prog{#3}, \Prog{#4)}}
-}
-
-\NewDocumentCommand{\ReqA}{smmm}{
-  \Prog{\textsf{fork}_{\Name{#2}} \; \Name{#3}.\, \IfProgparens{#1}{\Prog{#4}}}
-}
-\NewDocumentCommand{\ReqW}{m}{
-  \Prog{\textsf{eof}_\Name{#1}}
-}
-
+% \App{e}{e'}  produces e(e')
+% \App*{e}{e'} produces (e)(e')
+\NewDocumentCommand{\App}{smm}{\IfBooleanTF{#1}{\parens{#2}}{#2}\parens{#3}}
