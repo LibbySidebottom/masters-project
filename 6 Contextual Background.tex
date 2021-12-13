@@ -1,5 +1,5 @@
-\chapter{Contextual Background}
-\label{chap:context}
+\chapter{Introduction}
+\label{chap: intro}
 
 % The problem - no one ever wrote any basic explanation on CLL so the literature on the subject is very 
 % inaccessible. The goal - to introduce CLL in an accessible format and to provide a translation from the 
@@ -9,11 +9,22 @@
 There is no lack of literature on classical linear logic, however almost all of it assumes a reasonable 
 level of prior knowledge on the subject. This would not be a problem if someone had written down all the 
 rules and explained the purpose of CLL. Unfortunately, no one thought to do such a thing and so the rules 
-of CLL are taught to students by supervisors in a one-on-one setting. The aim of this paper is to present 
+of CLL are taught to students by supervisors in a one-on-one setting. The aim of this report is to present 
 the rules of classical linear logic such that someone who has no prior knowledge can come away knowing 
 enough to approach more literature on the topic without feeling out of depth. We will then provide a 
 translation from the simply typed lambda calculus into classical linear logic which has again been 
 considered by many prominent figures, but never been written out in full. 
+
+Our main topic is classical linear logic which was first presented by Girard as an extension of classical 
+logic. Classical linear logic is a classical logic without structure. It is purely mathematical and has a 
+number of applications in computer science, namely in reasoning about resources and resource usage, reasoning 
+about ownership, and finally in communication. The latter is seen under the Curry-Howard isomorphism, and is 
+the aspect we will be focusing on.
+
+The Curry-Howard isomorphism is a well known equivalence between mathematical proofs and computation. Here 
+we use a variant of this found by Caires and Pfenning with propositions as session types, proofs as processes, 
+and cut elimination as computation. This variant equates classical linear logic with a process calculus similar 
+to the $\pi$ calculus and allows us to model classical linear logic as a parallel programming language. 
 
 
 

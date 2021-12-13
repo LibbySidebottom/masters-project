@@ -3,21 +3,21 @@
 \definecolor{RegalBlue}{RGB}{3,69,117}
 \NewDocumentCommand{\Meta}{m}{{\color{IdiotPurple}{#1}}}
 \NewDocumentCommand{\Tm}{m}{{\color{RegalBlue}{#1}}}
-\NewDocumentCommand{\Deriv}{m}{{\color{DogwoodRose}{#1}}}
+\NewDocumentCommand{\LamDeriv}{m}{{\color{DogwoodRose}{#1}}}
 \NewDocumentCommand{\Comm}{m}{{\color{CommandPurple}{#1}}}
 \NewDocumentCommand{\Locc}{m}{{\color{FernGreen}{#1}}}
 
 % MACROS FOR INDUCTIVE PROOFS
-\newlist{indproof}{itemize}{5}
-\setlist[indproof]{%
-%  topsep=30pt,  % space before start / after end of list
-  itemsep=5pt,  % space between items
-  leftmargin=5pt,
-  listparindent=10pt,
-  font={\sc}, % set the label font
-  label={}
-}
-\newcommand{\indcase}[1]{\item{Case}(#1).}
+% \newlist{indproof}{itemize}{5}
+% \setlist[indproof]{%
+%   topsep=30pt,  % space before start / after end of list
+%   itemsep=5pt,  % space between items
+%   leftmargin=5pt,
+%   listparindent=10pt,
+%   font={\sc}, % set the label font
+%   label={}
+% }
+% \newcommand{\indcase}[1]{\item{Case}(#1).}
 
 % Week 1: Judgements and Induction
 
@@ -68,9 +68,9 @@
 
 \NewDocumentCommand{\Tuple}{mm}{\langle #1, #2 \rangle}
 \NewDocumentCommand{\Proj}{O{1}m}{\pi_{#1}(#2)}
-\NewDocumentCommand{\Inl}{m}{\textsf{inl}(#1)}
-\NewDocumentCommand{\Inr}{m}{\textsf{inr}(#1)}
-\NewDocumentCommand{\Case}{mmmmm}{\textsf{case}(#1; #2.\, #3; #4.\, #5)}
+\NewDocumentCommand{\LamInl}{m}{\textsf{inl}(#1)}
+\NewDocumentCommand{\LamInr}{m}{\textsf{inr}(#1)}
+\NewDocumentCommand{\LamCase}{mmmmm}{\textsf{case}(#1; #2.\, #3; #4.\, #5)}
 
 \NewDocumentCommand{\Unit}{}{\mathbf{1}}
 \NewDocumentCommand{\UnitV}{}{\langle\rangle}

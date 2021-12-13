@@ -50,6 +50,7 @@
 \usepackage{locallabel}
 \usepackage{pftools}
 \usepackage{pi-macros}
+\usepackage{lambda-macros}
 
 \newcommand\EqDef{\stackrel{\text{def}}{=}}
 
@@ -67,19 +68,20 @@
 \section*{Prelude}
 \thispagestyle{empty}
 
-A typical dissertation will be structured according to (somewhat) standard 
-sections, described in what follows.  However, it is hard and perhaps even 
-counter-productive to generalise: the goal is {\em not} to be prescriptive, 
-but simply to act as a guideline.  In particular, each page count given is
-important but {\em not} absolute: their aim is simply to highlight that a 
-clear, concise description is better than a rambling alternative that makes
-it hard to separate important content and facts from trivia.
+% A typical dissertation will be structured according to (somewhat) standard 
+% sections, described in what follows.  However, it is hard and perhaps even 
+% counter-productive to generalise: the goal is {\em not} to be prescriptive, 
+% but simply to act as a guideline.  In particular, each page count given is
+% important but {\em not} absolute: their aim is simply to highlight that a 
+% clear, concise description is better than a rambling alternative that makes
+% it hard to separate important content and facts from trivia.
 
-You can use this document as a \LaTeX-based~\cite{wombat2016,lion2010} 
-template for your own dissertation by simply deleting extraneous sections
-and content; keep in mind that the associated {\tt Makefile} could be of
-use, in particular because it automatically executes \mbox{\LaTeX} to
-deal with the associated bibliography. Alternatively, upload your zip folder to Overleaf (collaborative online \LaTeX editor and compiler) 
+% You can use this document as a \LaTeX-based~\cite{wombat2016,lion2010} 
+% template for your own dissertation by simply deleting extraneous sections
+% and content; keep in mind that the associated {\tt Makefile} could be of
+% use, in particular because it automatically executes \mbox{\LaTeX} to
+% deal with the associated bibliography. Alternatively, upload your zip folder 
+% to Overleaf (collaborative online \LaTeX editor and compiler) 
 
 % =============================================================================
 
@@ -136,6 +138,7 @@ deal with the associated bibliography. Alternatively, upload your zip folder to 
 \include{6 Contextual Background.tex}
 \include{7 Technical Background.tex}
 \include{8 Project Execution.tex}
+\include{9 Main Body.tex}
 \include{10 Critical Evaluation.tex}
 \include{11 Conclusion.tex}
 % =============================================================================

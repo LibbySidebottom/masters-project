@@ -1,1 +1,209 @@
+\chapter{Translation}
+
+Here we present a translation from the simply typed lambda calculus into classical linear logic. First 
+we will give the direct translation of each type, then a detailed derivation of how we got there. We 
+make use of the $^{\circ}$ symbol to denote a translation. On the left hand side we have the lambda 
+calculus type, and on the right we have its classical linear logic translation.
+
+\begin{align*}
+    (1)^\circ &= \top^\circ \\
+    (A + B)^\circ &= A^\circ \oplus B^\circ \\
+    (A \times B)^\circ &= A^\circ \otimes B^\circ \\
+    (A \rightarrow B)^\circ &= \negg{(\ofc A^\circ)} \parr B^\circ
+\end{align*}
+
+The translation of some environment $\Gamma$ are as follows:
+
+\begin{align*}
+  \Gamma^\circ & \\
+  (\cdot)^\circ &= \cdot \\
+  (\Gamma, x:A)^\circ &= \Gamma^\circ, x: \negg{(\ofc A^\circ)} \\
+   &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
+\end{align*}
+
+\begin{mathpar}
+    %var
+    {\Biggl\llbracket
+    \inferH{}{
+    }{
+        \Gamma, x: A \vdash x: A
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+        \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x}: \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }{
+            \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }
+    }{
+        \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Gamma^\circ \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+    }\\
+
+    %unit
+    {\Biggl\llbracket
+    \inferH{}{
+    }{
+    \Gamma \vdash \langle \rangle : 1
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+    }{
+    \IsProc{\Casep{x}{}{}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+    }\\
+
+    %left injection
+    {\Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash M:A
+    }{
+      \Gamma \vdash inl(M): A+B
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ}
+    }{
+      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+    }\\
+
+    %right injection
+    {\Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash M:B
+    }{
+      \Gamma \vdash inl(M): A+B
+    }\Biggr\rrbracket}_\Name{x}
+    \EqDef
+    \inferH{}{
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: B^\circ}
+    }{
+      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+    }\\
+
+    %here we use the anti barendregt convention for convenience
+    %case
+    \Biggl\llbracket
+    \inferH{}{
+      \Gamma \vdash M: A+B \\
+      \Gamma, x:A \vdash P:C \\
+      \Gamma, x:B \vdash Q:C
+    }{
+      \Gamma \vdash case(M;x.P;x.Q):C
+    }\Biggr\rrbracket_\Name{x}
+    \EqDef
+    \inferH{}{
+      \inferH{}{
+        \inferH{}{
+          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+          \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)}} \\
+          \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(B^\circ)}}
+        }{
+          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+          \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)} \with \negg{(B^\circ)}}
+        }
+      }{
+        \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+      }
+    }{
+      \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+    }
+
+    %product
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \\
+    \Gamma \vdash N : B
+    }{
+    \Gamma \vdash \langle M, N \rangle : A \times B
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : A^{\circ}} \\
+    \IsProc{\llbracket N \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+    }{
+    \IsProc{\Casep{x}{{\llbracket M \rrbracket}_\Name{x}}{{\llbracket N \rrbracket}_\Name{x}}}{\Gamma^{\circ}, \Name{x} : A^{\circ} \with B^{\circ}}
+    }\\
+
+    %left projection
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \times B
+    }{
+    \Gamma \vdash \pi_{1} (M) : A
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x} : A, \Name{y} : \negg{(A^{\circ})}}
+    }{
+    \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : A^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+    }\\
+    \inferH{}{
+    }{
+        \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+    }}{
+    \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} {\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : A^{\circ}}
+    }\\
+
+    %right projection
+    {\Biggl\llbracket
+    \inferH{}{
+    \Gamma \vdash M : A \times B
+    }{
+    \Gamma \vdash \pi_{2} (M) : B
+    }\Biggr\rrbracket}_{\Name{x}}
+    \EqDef
+    \inferH{}{
+    \inferH{}{
+        \IsProc{\Link{x}{y}}{\Name{x} : B, \Name{y} : \negg{(B^{\circ})}}
+    }{
+    \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : B^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+    }\\
+    \inferH{}{
+    }{
+        \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+    }}{
+    \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} {\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+    }\\
+
+    %lambda abstraction
+    {\Biggl\llbracket 
+    \inferH{}{
+    \Gamma, x :A \vdash M :B
+    }{
+    \Gamma \vdash \lambda. x : A. M : A \rightarrow B
+    } \Biggr\rrbracket}_{\Name{y}}
+    \EqDef
+    \inferH{}{
+    \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{x} : \negg{(\ofc A^{\circ})}, \Name{y} : B^{\circ}}
+    }{
+    \IsProc{\In{y}{x}{{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{y} : \negg{(\ofc A^{\circ})} \parr B^{\circ}}
+    }\\
+
+    %application
+    \Biggl\llbracket 
+    \inferH{}{
+      \Gamma \vdash M:A \rightarrow B \\
+      \Gamma \vdash N:A
+    }{
+      \Gamma \vdash MN:B
+    }\Biggr\rrbracket_\Name{y}
+    \EqDef
+    \inferH{}{
+      \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)} \parr B^\circ}
+      }{
+        \IsProc{depar}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
+      }\\
+      \inferH{}{
+        \IsProc{\llbracket N \rrbracket_\Name{y}}{\Gamma^\dagger, \Name{y^\dagger}: A^\circ}
+      }{
+        \IsProc{\In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
+      }
+    }{
+      \IsProc{\New*{x}{}{depar \mathbin{|} \In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
+    }
+\end{mathpar}
+
+
+
 % -----------------------------------------------------------------------------

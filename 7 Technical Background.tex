@@ -1,7 +1,7 @@
-\chapter{Technical Background}
-\label{chap:technical}
+\chapter{The Simply Typed Lambda Calculus}
+\label{chap: stlc}
 
-\section{The Simply Typed Lambda Calculus}
+The simply typed lambda calculus is regarded as the most basic functional programming language. 
 
 \begin{figure}[h]
     \begin{align*}
@@ -25,7 +25,7 @@
 \end{figure}
 
 \noindent
-The Simply Typed Lambda Calculus is a language for working with functions. If we have some typing
+The simply typed lambda calculus is a language for working with functions. If we have some typing
 relation $\Gamma \vdash x: \sigma$ this means that in the context $\Gamma$, $x$ has type $\sigma$,
 and $x$ is said to be well-typed. We can see from \ref{fig: tt stlc} that we have three composite
 types and terms can take on specific forms, the rules for which are shown in \ref{fig: r stlc}. The
@@ -41,49 +41,49 @@ So our function $f$ takes in some parameter of type $\sigma$ and outputs a resul
     \begin{mathpar}
         \inferH{Var}{
         }{
-            \Gamma, x: \sigma \vdash x: \sigma
+            \Gamma, \DeclVar{x}{\sigma} \vdash \DeclVar{x}{\sigma}
         }\qquad
         \inferH{Unit}{
         }{
-            \Gamma \vdash \langle \rangle : 1
+            \Gamma \vdash \UnitV : 1
         }\\
         \inferH{In-l}{
             \Gamma \vdash e: \tau_1
         }{
-            \Gamma \vdash inl(e): \tau_1 + \tau_2
+            \Gamma \vdash \LamInl{e}: \tau_1 + \tau_2
         }\qquad
         \inferH{In-r}{
             \Gamma \vdash e: \tau_2
         }{
-            \Gamma \vdash inl(e): \tau_1 + \tau_2
-        }\qquad
+            \Gamma \vdash \LamInr{e}: \tau_1 + \tau_2
+        }\\
         \inferH{Case}{
             \Gamma \vdash e: \tau_1 + \tau_2 \\
             \Gamma, x: \tau_1 \vdash e_1: \tau \\
             \Gamma, y: \tau_2 \vdash e_2: \tau
         }{
-            \Gamma \vdash case(e;x.e_1;y.e_2): \tau
+            \Gamma \vdash \LamCase{e}{x}{e_1}{y}{e_2}: \tau
         }\\
         \inferH{Pair}{
             \Gamma \vdash e_1: \tau_1 \\
             \Gamma \vdash e_2: \tau_2
         }{
-            \Gamma \vdash \langle e_1, e_2 \rangle : \tau_1 \times \tau_2
+            \Gamma \vdash \Tuple{e_1}{e_2} : \tau_1 \times \tau_2
         }\qquad
         \inferH{Prj-l}{
             \Gamma \vdash e: \tau_1 \times \tau_2
         }{
-            \Gamma \vdash \pi_1 (e): \tau_1
+            \Gamma \vdash \Proj{e}: \tau_1
         }\qquad
         \inferH{Prj-r}{
             \Gamma \vdash e: \tau_1 \times \tau_2
         }{
-            \Gamma \vdash \pi_2 (e): \tau_2
+            \Gamma \vdash \Proj[2]{e}: \tau_2
         }\\
         \inferH{Abs}{
             \Gamma, x: \sigma \vdash e: \tau
         }{
-            \Gamma \vdash \lambda x: \sigma. e: \sigma \rightarrow \tau
+            \Gamma \vdash \Lam{x}[\sigma]{e}: \sigma \rightarrow \tau
         }\qquad
         \inferH{App}{
             \Gamma \vdash e_1: \sigma \rightarrow \tau \\
@@ -117,7 +117,82 @@ us to create a function $\lambda x. e : \sigma \rightarrow \tau$ if we can obtai
 from $\Gamma$ and $x: \sigma$. The \ruleref{App} rule is the destructor of the function type - function 
 application. If we have some function $e_1: \sigma \rightarrow \tau$ and some variable $e_2$ of type 
 $\sigma$ then we can apply the function $e_1$ to $e_2$ and obtain a result with type $\tau$.
+\\
+\noindent
+Along with the simply typed lambda calculus being well-typed, we also need it to be type safe. If we 
+have a variable of a certain type then we must have that the following properties hold:
 
+\paragraph{Progress:} If we have some variable $e$ where $\vdash \DeclVar{e}{\tau}$ then either $e$ is a 
+value, or $e \Step e'$ for some $e'$.
+\noindent
+\paragraph{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ then we must have 
+$\vdash \DeclVar{e'}{\tau}$.
+
+\noindent
+These type-safety properties refer to the dynamics of the lambda calculus which are as follows.
+
+\begin{mathpar}
+    \inferH{Val-Unit}{
+    }{
+        \UnitV \ \text{val}
+    }\qquad
+    \inferH{Val-In-l}{
+    }{
+        \LamInl{e} \ \text{val}
+    }\qquad
+    \inferH{Val-In-r}{
+    }{
+        \LamInr{e} \ \text{val}
+    }\qquad
+    \inferH{Val-Pair}{
+    }{
+        \Tuple{e_1}{e_2} \ \text{val}
+    }\qquad
+    \inferH{Val-Abs}{
+    }{
+        \Lam{x}[\sigma]{e} \ \text{val}
+    }\\
+    \inferH{D-Case-In-l}{
+    }{
+        \LamCase{\LamInl{e}}{x}{e_1}{y}{e_2} \Step e_1[e/x]
+    }\qquad
+    \inferH{D-Case-In-r}{
+    }{
+        \LamCase{\LamInr{e}}{x}{e_1}{y}{e_2} \Step e_2[e/y]
+    }\\
+    \inferH{D-Case}{
+        e \Step e'
+    }{
+        \LamCase{e}{x}{e_1}{y}{e_2} \Step \LamCase{e'}{x}{e_1}{y}{e_2}
+    }\\
+    \inferH{D-Prj-Pair-l}{
+    }{
+        \Proj{\Tuple{e_1}{e_2}} \Step \Proj{e_1}
+    }\qquad
+    \inferH{D-Prj-Pair-l}{
+    }{
+        \Proj[2]{\Tuple{e_1}{e_2}} \Step \Proj[2]{e_2}
+    }\\
+    \inferH{D-Prj-l}{
+        e \Step e'
+    }{
+        \Proj{e} \Step \Proj{e'}
+    }\qquad
+    \inferH{D-Prj-r}{
+        e \Step e'
+    }{
+        \Proj[2]{e} \Step \Proj[2]{e'}
+    }\\
+    \inferH{D-Beta}{
+    }{
+        (\Lam{x}[\sigma]{e_1})(e_2) \Step e_1[e_2/x]
+    }\qquad
+    \inferH{D-App}{
+        e_1 \Step e'_1
+    }{
+        e_1(e_2) \Step e'_1(e_2)
+    }
+\end{mathpar}
 
 % \noindent
 % This chapter is intended to describe the technical basis on which execution
