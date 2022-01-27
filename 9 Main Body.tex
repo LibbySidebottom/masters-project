@@ -21,10 +21,38 @@ The translation of some environment $\Gamma$ are as follows:
    &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
 \end{align*}
 
+We will also need a derivable rule, \ruleref{Depar} which is as follows:
+
+\begin{mathpar}
+  \inferH{}{
+    \inferH{}{
+      \IsProc{\Link{w}{x}}{\Name{x}: A, \Name{w}: \negg{A}}\\
+      \IsProc{\Link{y}{z}}{\Name{y}: B, \Name{z}: \negg{B}}
+    }{
+      \IsProc{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})}}{\Name{x}: A, \Name{y}: B, \Name{z}: \negg{A} \otimes \negg{B}}
+    }\\
+    \inferH{}{
+    }{
+      \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+    }
+  }{
+    \IsProc{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} P}}{\Gamma, \Name{x}: A, \Name{y}: B}
+  }\quad \leadsto \quad
+  \inferH{Depar}{
+    \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+  }{
+    \IsProc{\Depar{x}{y}{P}}{\Gamma, \Name{x}: A, \Name{y}: B}
+  }
+\end{mathpar}
+
+\noindent
+\ruleref{Depar} takes a concurrent process $A \parr B$ and disconnects them to give us 
+both $A$ and $B$ individually.
+
 \begin{mathpar}
     %var
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{Var}{
     }{
         \Gamma, x: A \vdash x: A
     }\Biggr\rrbracket}_\Name{x}
@@ -33,87 +61,85 @@ The translation of some environment $\Gamma$ are as follows:
         \inferH{}{
         \IsProc{\Link{x}{y}}{\Name{x}: \negg{(A^\circ)}, \Name{y}: A^\circ}
         }{
-            \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+            \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
         }
     }{
-        \IsProc{\Out{\whynot z}{x}{\Link{x}{y}}}{\Gamma^\circ \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+        \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Gamma^\circ \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
     }\\
 
     %unit
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{Unit}{
     }{
     \Gamma \vdash \langle \rangle : 1
     }\Biggr\rrbracket}_\Name{x}
     \EqDef
     \inferH{}{
     }{
-    \IsProc{\Casep{x}{}{}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+    \IsProc{\EmCase{x}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
     }\\
 
     %left injection
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{In-l}{
       \Gamma \vdash M:A
     }{
-      \Gamma \vdash inl(M): A+B
+      \Gamma \vdash \LamInl{M}: A+B
     }\Biggr\rrbracket}_\Name{x}
     \EqDef
     \inferH{}{
       \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ}
     }{
-      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+      \IsProc{\Inl{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
     }\\
 
     %right injection
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{In-r}{
       \Gamma \vdash M:B
     }{
-      \Gamma \vdash inl(M): A+B
+      \Gamma \vdash \LamInr{M}: A+B
     }\Biggr\rrbracket}_\Name{x}
     \EqDef
     \inferH{}{
       \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: B^\circ}
     }{
-      \IsProc{\Out{x}{inl}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+      \IsProc{\Inr{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
     }\\
 
     %here we use the anti barendregt convention for convenience
     %case
     \Biggl\llbracket
-    \inferH{}{
+    \inferH{Case}{
       \Gamma \vdash M: A+B \\
       \Gamma, x:A \vdash P:C \\
       \Gamma, x:B \vdash Q:C
     }{
-      \Gamma \vdash case(M;x.P;x.Q):C
+      \Gamma \vdash \LamCase{M}{x}{P}{x}{Q}:C
     }\Biggr\rrbracket_\Name{x}
     \EqDef
     \inferH{}{
-      \inferH{}{
-        \inferH{}{
-          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
-          \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)}} \\
-          \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(B^\circ)}}
-        }{
-          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
-          \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)} \with \negg{(B^\circ)}}
-        }
-      }{
-        \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
-      }
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+      \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)}} \\
+      \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(B^\circ)}}
     }{
-      \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
-    }
+        \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+        \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)} \with \negg{(B^\circ)}}
+      }{
+          \inferH{}{
+          \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+        }{
+          \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+    }}}
 
     %product
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{Prod}{
     \Gamma \vdash M : A \\
     \Gamma \vdash N : B
     }{
-    \Gamma \vdash \langle M, N \rangle : A \times B
+    \Gamma \vdash \Tuple{M}{N} : A \times B
     }\Biggr\rrbracket}_{\Name{x}}
     \EqDef
     \inferH{}{
@@ -125,10 +151,10 @@ The translation of some environment $\Gamma$ are as follows:
 
     %left projection
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{Prj-l}{
     \Gamma \vdash M : A \times B
     }{
-    \Gamma \vdash \pi_{1} (M) : A
+    \Gamma \vdash \Proj{M} : A
     }\Biggr\rrbracket}_{\Name{x}}
     \EqDef
     \inferH{}{
@@ -146,10 +172,10 @@ The translation of some environment $\Gamma$ are as follows:
 
     %right projection
     {\Biggl\llbracket
-    \inferH{}{
+    \inferH{Prj-r}{
     \Gamma \vdash M : A \times B
     }{
-    \Gamma \vdash \pi_{2} (M) : B
+    \Gamma \vdash \Proj[2]{M} : B
     }\Biggr\rrbracket}_{\Name{x}}
     \EqDef
     \inferH{}{
@@ -167,10 +193,10 @@ The translation of some environment $\Gamma$ are as follows:
 
     %lambda abstraction
     {\Biggl\llbracket 
-    \inferH{}{
+    \inferH{Lam}{
     \Gamma, x :A \vdash M :B
     }{
-    \Gamma \vdash \lambda. x : A. M : A \rightarrow B
+    \Gamma \vdash \Lam{x}[A]{M} : A \rightarrow B
     } \Biggr\rrbracket}_{\Name{y}}
     \EqDef
     \inferH{}{
@@ -181,7 +207,7 @@ The translation of some environment $\Gamma$ are as follows:
 
     %application
     \Biggl\llbracket 
-    \inferH{}{
+    \inferH{App}{
       \Gamma \vdash M:A \rightarrow B \\
       \Gamma \vdash N:A
     }{
@@ -192,18 +218,23 @@ The translation of some environment $\Gamma$ are as follows:
       \inferH{}{
         \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)} \parr B^\circ}
       }{
-        \IsProc{depar}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
+        \IsProc{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
       }\\
       \inferH{}{
         \IsProc{\llbracket N \rrbracket_\Name{y}}{\Gamma^\dagger, \Name{y^\dagger}: A^\circ}
       }{
-        \IsProc{\In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
+        \IsProc{\ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
       }
     }{
-      \IsProc{\New*{x}{}{depar \mathbin{|} \In{\ofc x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
+      \IsProc{\New*{x}{}{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}} \mathbin{|} \ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
     }
 \end{mathpar}
 
+It is interesting to note that we have an inversion of polarity from the lambda calculus 
+to classical linear logic. All type constructors in the lambda calculus become destructors 
+in CLL and vice verca. 
 
+For the translation of the case rule, we use the anti-Barendregt convention and conveniently 
+name variables in such a way that we do not have to rename them in the future. 
 
 % -----------------------------------------------------------------------------

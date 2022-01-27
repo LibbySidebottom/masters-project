@@ -114,6 +114,14 @@
 \NewDocumentCommand{\Casep}{mmm}{
   \Proc{\Name{#1}.\textsf{case}\{#2; #3\}}
 }
+% \EmCase{x} yields x.case()
+\NewDocumentCommand{\EmCase}{m}{
+  \Proc{\Name{#1}.\textsf{case}\{\}}
+}
+% \Depar{x}{y}{P} yields depar(x;y;P)
+\NewDocumentCommand{\Depar}{mmm}{
+  \Proc{\Name{#1}\Name{#2}.\textsf{depar}\{#3\}}
+}
 
 \NewDocumentCommand{\Weaken}{smmm}{
   \Deriv{\mathcal{W}_{\Name{#2},\Type{#3}}[](\Proc{#4})}

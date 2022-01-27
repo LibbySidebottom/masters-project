@@ -9,24 +9,47 @@
 There is no lack of literature on classical linear logic, however almost all of it assumes a reasonable 
 level of prior knowledge on the subject. This would not be a problem if someone had written down all the 
 rules and explained the purpose of CLL. Unfortunately, no one thought to do such a thing and so the rules 
-of CLL are taught to students by supervisors in a one-on-one setting. The aim of this report is to present 
+are taught to students by supervisors in a one-on-one setting. The aim of this report is to present 
 the rules of classical linear logic such that someone who has no prior knowledge can come away knowing 
 enough to approach more literature on the topic without feeling out of depth. We will then provide a 
 translation from the simply typed lambda calculus into classical linear logic which has again been 
 considered by many prominent figures, but never been written out in full. 
 
+There are two forms of logic: classical logic, and constructive logic (also called intuitionistic logic). 
+Statements in classical logic 
+can be either true or false, and cannot be undetermined. A statement is true in classical logic if it 
+is not false. On some level this makes sense as we may consider things to be either true or false, 
+but we can have results in mathematics which are not proved to be true but aren't proved to be false 
+either. A famous computer science theorem of this nature is the P vs. NP problem. It has neither 
+been proven that P = NP or that P $\ne$ NP, but we cannot have uncertainty classical logic. However, as 
+it is not proven that P $\ne$ NP then we can assume P = NP in classical logic. On the other hand, in 
+constructive logic we can only accept as statement to be true if we have proved that it is true, 
+and similarly we can only accept it is false if we have proved it to be. So, in constructive logic 
+we can accept P vs. NP as an unsolved problem. This makes constructive logic stronger than classical 
+logic as we can have ambiguous statements.
+
 Our main topic is classical linear logic which was first presented by Girard as an extension of classical 
-logic. Classical linear logic is a classical logic without structure. It is purely mathematical and has a 
+logic. Classical linear logic is a classical logic without structural rules. It is purely mathematical and has a 
 number of applications in computer science, namely in reasoning about resources and resource usage, reasoning 
 about ownership, and finally in communication. The latter is seen under the Curry-Howard isomorphism, and is 
-the aspect we will be focusing on.
+the aspect we will be focusing on. 
 
 The Curry-Howard isomorphism is a well known equivalence between mathematical proofs and computation. Here 
-we use a variant of this found by Caires and Pfenning with propositions as session types, proofs as processes, 
-and cut elimination as computation. This variant equates classical linear logic with a process calculus similar 
+we use a variant of this found by Caires and Pfenning (*) with 
+\begin{align*}
+    \text{propositions }& \text{as session types,} \\
+    \text{proofs } & \text{as processes,} \\
+    \text{cut elimination } & \text{as computation.} 
+\end{align*}
+
+This variant equates classical linear logic with a process calculus similar 
 to the $\pi$ calculus and allows us to model classical linear logic as a parallel programming language. 
 
 
+In fact, Girard (*) said linear logic had a strong connection to parallel computation, 
+specifically the multiplicative fragment being an asynchronous communication system.
+
+exponentials allow us to add structural rules like contraction and weakening to some extent
 
 % {\bf A compulsory chapter, of roughly $5$ pages}
 

@@ -17,12 +17,12 @@ would read as
 \begin{mathpar}
   \vdash \negg{A_1}, \negg{A_2}, ..., \negg{A_n}, B_1, B_1, ..., B_m
 \end{mathpar}
-in classica linear logic.
+in classical linear logic.
 This makes CLL slightly easier to read as we don't have to worry about propositions on the left-hand 
-side of our sequent. As we can see from our new one-sided sequent, we now also have 
+side of our sequent. We can see the use linear negation in our new one-sided sequent.
 
 We also have that any proposition must be used exactly as many times as it appears. We cannot have some 
-proposition A and not make use of it, and similarly we cannot use it any more than once if it only appears 
+proposition $A$ and not make use of it, and similarly we cannot use it any more than once if it only appears 
 once. 
 
 Our propositions for CLL are as follows:
@@ -55,7 +55,8 @@ inserting \pounds 1 will give us a choice of either Tea or Coffee. If you can't 
 vending machine which says \emph{Tea} $\oplus$ \emph{Coffee} will take our \pounds 1 and give us either Tea or Coffee making the decision 
 for us. Par is not quite so easy to describe, if we stay with our vending machines then we would most likely see 
 $\pounds 1 \ \parr$ \emph{Tea} which would imply that inserting \pounds 1 into the vending machine will then give us Tea. 
-Having a term $A \parr B$ in classical linear logic is equivalent to having a term $\negg{A} \multimap B$ in linear logic. 
+Having a term $A \parr B$ in classical linear logic is equivalent to having a term $\negg{A} \multimap B$ in linear logic:
+"not A linearly implies B".
 The exponential fragment also fits in with this slightly differently. If we have a term $\ofc \pounds 1$ this would indicate 
 that we have multiple \pounds 1 coins which we may use at the vending machine. We may also see a term $\whynot \pounds 1$ 
 on any of these vending machines which would indicate that it is possible to use the machine more than once by inserting 
@@ -78,14 +79,14 @@ who may request many copies of A.
 It is important to note that every proposition has a dual, specifically:
 
 \begin{align*}
-  \negg{(A \otimes B)} &= \negg{A} \parr \negg{B} \\
-  \negg{(A \oplus B)} &= \negg{A} \with \negg{B} \\
-  \negg{(\ofc A)} &= \whynot \negg{A}
+  \negg{(A \otimes B)} &= \negg{A} \parr \negg{B} & \negg{(A \parr B)} &= \negg{A} \otimes \negg{B} \\
+  \negg{(A \oplus B)} &= \negg{A} \with \negg{B} & \negg{(A \with B)} &= \negg{A} \oplus \negg{B}\\
+  \negg{(\ofc A)} &= \whynot \negg{A} & \negg{(\whynot A)} &= \ofc \negg{A}
 \end{align*}
 
 \noindent
 Classical linear logic naturally lends itself to parallelism, so we present the rules of CLL 
-alongside a process calculus similar to $\pi$ calculus. The processes for this are as follows:
+alongside a process calculus similar to $\pi$ calculus. The processes for which are as follows:
 
 \begin{figure}[h]
   \begin{align*}
@@ -98,11 +99,12 @@ alongside a process calculus similar to $\pi$ calculus. The processes for this a
     & \Proc{\Inr{x}{P}} & \text{right selection} \\
     & \Proc{\Casep{x}{P}{Q}} & \text{choice} \\
     & \Proc{\New*{x}{}{P \mathbin{|} Q}} & \text{connect on channel \Name{x}} \\
-    & \Proc{\Out{\whynot y}{x}{P}} & \text{client request} \\
-    & \Proc{\In{\ofc y}{x}{P}} & \text{server accept} \\
+    & \Proc{\whynot \Out{y}{x}{P}} & \text{client request} \\
+    & \Proc{\ofc \In{y}{x}{P}} & \text{server accept} \\
     & \Proc{\Out{y}{\ }{P}} & \text{empty output} \\
     & \Proc{\In{y}{\ }{P}} & \text{empty input} \\
-    & \Proc{\Casep{x}{}{}} & \text{empty choice}
+    & \Proc{\EmCase{x}} & \text{empty choice} \\
+    & \Proc{P[\Name{x} / \Name{y}]} & \text{substitution}
   \end{align*}
   \caption{Classical Processes (CP)}
   \label{fig: p cp}
@@ -110,8 +112,8 @@ alongside a process calculus similar to $\pi$ calculus. The processes for this a
 
 \noindent
 A process $\Proc{P}$ in CP can take on a few forms. Link says that we can connect two channels in 
-such a way that any message delivered to \Name{y} will be forwarded over \Name{x} and vice verca.
-For an output such as $\Proc{\Out{y}{x}{P \mathbin{|} Q}}$ we have that $\Name{y}$ is bound in 
+such a way that any message delivered to $\Name{y}$ will be forwarded over $\Name{x}$ and vice verca.
+For an output such as $\Proc{\Out{y}{x}{(P \mathbin{|} Q)}}$ we have that $\Name{y}$ is bound in 
 $\Proc{P}$, but is not bound in $\Proc{Q}$. For the input $\Proc{\In{y}{x}{P}}$, $\Name{y}$ is bound 
 in $\Proc{P}$. In $\Proc{\New*{x}{}{P \mathbin{|} Q}}$, $\Name{x}$ is bound in both $\Proc{P}$ and 
 $\Proc{Q}$. Server accept is just like input so for $\Proc{\In{\ofc y}{x}{P}}$, we would have that 
@@ -123,9 +125,9 @@ $\Name{x}$ is bound in $\Proc{P}$, and similarly for $\Proc{\Out{\whynot y}{x}{P
 We can now combine our process calculus CP with our propositions for CLL and present the rules for 
 classical linear logic alongside their corresponding processes. Our typing judgements have the form 
 $\IsProc{P}{\Gamma, \Name{x}: A}$ where \Proc{P} is a CP process, $\Gamma$ is a type environment, 
-\Name{x} is a channel, and $A$ is a CLL proposition. This typing judgement means we have some process 
-\Proc{P} communicating along channel \Name{x} obeying protocol $A$. Processes can communicate over 
-multiple channels following different protocols, and as we saw in \refname{fig: p cp} the processes 
+$\Name{x}$ is a channel, and $A$ is a CLL proposition. This typing judgement means we have some process 
+\Proc{P} communicating along channel $\Name{x}$ obeying protocol $A$. Processes can communicate over 
+multiple channels following different protocols, and as we saw in \ref{fig: p cp} the processes 
 may also take on varying forms.
 
 \begin{figure}[h]
@@ -179,18 +181,18 @@ may also take on varying forms.
     \inferH{Contraction}{
       \IsProc{P}{\Gamma, \Name{x} : \whynot A, \Name{y} : \whynot A}
     }{
-      \IsProc{P \Out{}{x/y}{}}{\Gamma, \Name{x} : \whynot A}
+      \IsProc{P[\Name{x} / \Name{y}]}{\Gamma, \Name{x} : \whynot A}
     }\qquad
     \inferH{Dereliction}{
       \IsProc{P}{\Gamma, \Name{x} : A}
     }{
-      \IsProc{\Out{\whynot y}{x}{P}}{\Gamma, \Name{y} : \whynot A}
+      \IsProc{\whynot \Out{y}{x}{P}}{\Gamma, \Name{y} : \whynot A}
     }\\
 
     \inferH{Promotion}{
       \IsProc{P}{\whynot \Gamma, \Name{x} : A}
     }{
-      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y} : \ofc A}
+      \IsProc{\ofc \In{y}{x}{P}}{\whynot \Gamma, \Name{y} : \ofc A}
     }\\
 
     \inferH{}{
@@ -204,7 +206,7 @@ may also take on varying forms.
     }\qquad
     \inferH{}{
     }{
-      \IsProc{\Casep{x}{}{}}{\Gamma, \Name{x}: \top}
+      \IsProc{\EmCase{x}}{\Gamma, \Name{x}: \top}
     }
   \end{mathpar}
   \caption{Rules for Classical Linear Logic with CP}
@@ -215,13 +217,13 @@ may also take on varying forms.
 The \ruleref{Axiom} states that if we have some variable A, then we also have its dual $\negg{A}$. 
 For the CP side of things, we see that if we have two channels following dual protocols then any 
 input along \Name{x} is sent as output along \Name{y}.
-The \ruleref{Cut} rule allows us to connect two processes together. As the protocols are dual to, 
+The \ruleref{Cut} rule allows us to connect two processes together. As the protocols are dual, 
 any transmissions and selections over one correspond with receives and choices over the other. This 
 along with communication only via one channel ensures that the processes cannot get stuck.
 
 The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
 As P and Q communicate over different channels, we have disjoint concurrency so the processes cannot 
-communicate with each other. The new process, P|Q communicates over channel \Name{y}.
+communicate with each other. The new process, $\Proc{P \mathbin{|} Q}$ communicates over channel \Name{y}.
 The rule \ruleref{Par} inputs A, then continues as B. This is known as connected concurrency as P can 
 communicate along both \Name{x} and \Name{y}.
 
@@ -260,7 +262,7 @@ terms via cut reduction.
   }{
     \IsProc{\New*{x}{}{\Link{x}{y} \mathbin{|} P}}{\Gamma, \Name{y}: A}
   } \quad \Longrightarrow \quad
-  \IsProc{\Out{P}{y/x}{}}{\Gamma, \Name{y}: A} \\\\
+  \IsProc{P[\Name{y} / \Name{x}]}{\Gamma, \Name{y}: A} \\\\
 
   \inferH{}{
     \inferH{}{
@@ -319,15 +321,15 @@ terms via cut reduction.
     \inferH{}{
       \IsProc{P}{\whynot \Gamma, \Name{x}: A}
     }{
-      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
+      \IsProc{\ofc \In{y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
     }\\
     \inferH{}{
       \IsProc{Q}{\Delta, \Name{x}: \negg{A}}
     }{
-      \IsProc{\Out{\whynot y}{x}{Q}}{\Delta, \Name{y}: \negg{\whynot A}}
+      \IsProc{\whynot \Out{y}{x}{Q}}{\Delta, \Name{y}: \negg{\whynot A}}
     }
   }{
-    \IsProc{\New*{y}{}{\In{\ofc y}{x}{P} \mathbin{|} \whynot y}{x}{Q}}{\whynot \Gamma, \Delta}
+    \IsProc{\New*{y}{}{\ofc \In{y}{x}{P} \mathbin{|} \whynot \Out{y}{x}{Q}}}{\whynot \Gamma, \Delta}
   } \quad \Longrightarrow \quad
   \inferH{}{
     \IsProc{P}{\whynot \Gamma, \Name{x}: A}\\
@@ -340,7 +342,7 @@ terms via cut reduction.
     \inferH{}{
       \IsProc{P}{\whynot \Gamma, \Name{x}: A}
     }{
-      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
+      \IsProc{\ofc \In{y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
     }\\
     \inferH{}{
       \IsProc{Q}{\Delta}
@@ -348,7 +350,7 @@ terms via cut reduction.
       \IsProc{Q}{\Delta, \Name{x}: \negg{\whynot A}}
     }
   }{
-    \IsProc{\New*{y}{}{\In{\ofc y}{x}{P} \mathbin{|} Q}}{\whynot \Gamma, \Delta}
+    \IsProc{\New*{y}{}{\ofc \In{y}{x}{P} \mathbin{|} Q}}{\whynot \Gamma, \Delta}
   } \quad \Longrightarrow \quad
   \inferH{}{
     \IsProc{Q}{\Delta}
@@ -360,38 +362,38 @@ terms via cut reduction.
     \inferH{}{
       \IsProc{P}{\whynot \Gamma, \Name{x}: A}
     }{
-      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
+      \IsProc{\ofc \In{y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
     }\\
     \inferH{}{
       \IsProc{Q}{\Delta, \Name{y}: \whynot A, \Name{z}: \whynot A}
     }{
-      \IsProc{Q[y/z]}{\Delta, \Name{y}: \whynot A}
+      \IsProc{Q[\Name{y} / \Name{z}]}{\Delta, \Name{y}: \whynot A}
     }
   }{
-    \IsProc{\New*{y}{}{\In{\ofc y}{x}{P} \mathbin{|} Q[y/z]}}{\whynot \Gamma, \Delta}
+    \IsProc{\New*{y}{}{\ofc \In{y}{x}{P} \mathbin{|} Q[\Name{y} / \Name{z}]}}{\whynot \Gamma, \Delta}
   }\quad \Longrightarrow \\
 
   \inferH{}{
     \inferH{}{
       \IsProc{P}{\whynot \Gamma, \Name{x}: A}
     }{
-      \IsProc{\In{\ofc y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
+      \IsProc{\ofc \In{y}{x}{P}}{\whynot \Gamma, \Name{y}: \ofc A}
     }\\
     \inferH{}{
       \inferH{}{
         \IsProc{P'}{\whynot \Gamma', \Name{w}: A}
       }{
-        \IsProc{\In{\ofc z}{w}{P}}{\whynot \Gamma', \Name{z}: \ofc A}
+        \IsProc{\ofc \In{z}{w}{P}}{\whynot \Gamma', \Name{z}: \ofc A}
       }\\
       \IsProc{Q}{\Delta, \Name{y}: \negg{\whynot A}, \Name{z}: \negg{\whynot A}}
     }{
-      \IsProc{\New*{z}{}{\In{\ofc z}{w}{P} \mathbin{|} Q}}{\whynot \Gamma', \Delta, \Name{x}: \negg{\whynot A}}
+      \IsProc{\New*{z}{}{\ofc \In{z}{w}{P} \mathbin{|} Q}}{\whynot \Gamma', \Delta, \Name{x}: \negg{\whynot A}}
     }
   }{
     \inferH{}{
-      \IsProc{\New*{y}{}{\In{\ofc y}{x}{P} \mathbin{|} \New*{z}{}{\In{\ofc z}{w}{P'} \mathbin{|} Q}}}{\whynot \Gamma, \whynot \Gamma', \Delta}
+      \IsProc{\New*{y}{}{\ofc \In{y}{x}{P} \mathbin{|} \New*{z}{}{\ofc \In{z}{w}{P'} \mathbin{|} Q}}}{\whynot \Gamma, \whynot \Gamma', \Delta}
     }{
-      \IsProc{\New*{y}{}{\In{\ofc y}{x}{P} \mathbin{|} \New*{z}{}{\In{\ofc z}{y}{P} \mathbin{|} Q}}}{\whynot \Gamma, \Delta}
+      \IsProc{\New*{y}{}{\ofc \In{y}{x}{P} \mathbin{|} \New*{z}{}{\ofc \In{z}{y}{P} \mathbin{|} Q}}}{\whynot \Gamma, \Delta}
     }
   }\\\\
 
@@ -406,7 +408,7 @@ terms via cut reduction.
       \IsProc{\Out{x}{\ }{Q}}{\Name{x}: 1}
     }
   }{
-    \IsProc{\New*{x}{}{}\In{x}{\ }{P} \mathbin{|} \Out{x}{\ }{Q}}{\Gamma}
+    \IsProc{\New*{x}{}{\ }\In{x}{\ }{P} \mathbin{|} \Out{x}{\ }{Q}}{\Gamma}
   }\quad \Longrightarrow \quad
   \IsProc{P}{\Gamma}
 \end{mathpar}

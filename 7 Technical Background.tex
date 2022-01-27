@@ -1,7 +1,24 @@
 \chapter{The Simply Typed Lambda Calculus}
 \label{chap: stlc}
 
+The lambda calculus was invented by Church the 1930s (*) to provide a logical foundation for 
+mathematics. His original system was soon proved to have some logical inconsistencies (*). 
+Church then published in isolation the section of his system meant for dealing with functions 
+which he proved to be consistent. This portion of his original work is now known as the untyped 
+lambda calculus. Later on, he published the simply typed lambda calculus which is also logically 
+consistent although computationally weaker than its untyped counterpart. Although his original 
+system was designed as a foundation for mathematics, it was largely overlooked by the mathematic 
+community who preferred set theory. It wasn't until the 1960s that the $\lambda$-calculus was 
+discovered to be a useful tool in computer science.
+
 The simply typed lambda calculus is regarded as the most basic functional programming language. 
+It can be used both as a simple programming language with which we can execute computation, and 
+also as a mathematical object which we can perform proofs upon. Both of these aspects are 
+extremely useful to computer scientists. Modelling computation helps us to understand how a 
+language works, and viewing a language as a mathematical object allows us to prove that it 
+is safe. 
+
+\section{Statics}
 
 \begin{figure}[h]
     \begin{align*}
@@ -11,13 +28,13 @@ The simply typed lambda calculus is regarded as the most basic functional progra
         & \tau_1 \rightarrow \tau_2 &\text{function} \\
         \\
         Terms \quad e \quad ::= \quad & x &\text{variable} \\
-        & inl(e) &\text{left injection} \\
-        & inr(e) &\text{right injection} \\
-        & case(e;x.e_1;y.e_2) &\text{case} \\
-        & \langle e_1, e_2 \rangle &\text{pair} \\
-        & \pi_1 (e) &\text{left projection} \\
-        & \pi_2 (e) &\text{right projection} \\
-        & \lambda x: \tau. e &\text{abstraction} \\
+        & \LamInl{e} &\text{left injection} \\
+        & \LamInr{e} &\text{right injection} \\
+        & \LamCase{e}{x}{e_1}{y}{e_2} &\text{case} \\
+        & \Tuple{e_1}{e_2} &\text{pair} \\
+        & \Proj{e} &\text{left projection} \\
+        & \Proj[2]{e} &\text{right projection} \\
+        & \Lam{x}[\tau]{e} &\text{abstraction} \\
         & e_1 (e_2) &\text{application}
     \end{align*}
     \caption{Types and Terms for the Simply Typed Lambda Calculus}
@@ -28,7 +45,7 @@ The simply typed lambda calculus is regarded as the most basic functional progra
 The simply typed lambda calculus is a language for working with functions. If we have some typing
 relation $\Gamma \vdash x: \sigma$ this means that in the context $\Gamma$, $x$ has type $\sigma$,
 and $x$ is said to be well-typed. We can see from \ref{fig: tt stlc} that we have three composite
-types and terms can take on specific forms, the rules for which are shown in \ref{fig: r stlc}. The
+types and terms can take on specific forms, the rules for which are shown in \ref{fig: sr stlc}. The
 sum type is used to represent disjoint union so if $\Gamma \vdash x: \tau_1 + \tau_2$ then the type 
 of $x$ is either $\tau_1$ or $\tau_2$. The product type is used to represent pairs, so if we have
 $\Gamma \vdash \langle e_1, e_2 \rangle : \tau_1 \times \tau_2$ then we know that we have both 
@@ -92,21 +109,22 @@ So our function $f$ takes in some parameter of type $\sigma$ and outputs a resul
             \Gamma \vdash e_1 (e_2): \tau
         }\\
     \end{mathpar}
-    \caption{Rules for the Simply Typed Lambda Calculus}
-    \label{fig: r stlc}
+    \caption{Static Rules for the Simply Typed Lambda Calculus}
+    \label{fig: sr stlc}
 \end{figure}
 
 \noindent
-The rules in \ref{fig: r stlc} have premises on the top and conclusions on the bottom. So for any rule
-we know that if we have everything on top of the line, then we can conclude anything below the line.
+The rules in \ref{fig: sr stlc} have premises on the top and conclusions on the bottom. So for any rule
+we know that if we have everything above the line, then we can conclude anything below the line. Rules 
+without any premises are called axioms and require no justification.
 We take a constructor to be a rule which can create something of a certain type, and a destructor to be 
 a rule which 'reduces' something of that type to a 'simpler' type.
 
-The \ruleref{Var} rule simply states that if we have $x$ of type $\sigma$ in some environment $\Gamma$, 
-then we know $x: \sigma$. The \ruleref{Unit} rule states that if we have an empty pair, then this has 
+The \ruleref{Var} rule simply states that if we have $x: \sigma$ in some environment $\Gamma$, 
+then we know $x$ has type $\sigma$. The \ruleref{Unit} rule states that if we have an empty pair, then this has 
 the unit type: 1. \ruleref{In-r} is a constructor for the sum type which allows us to use injection 
-to derive $inl(e)$ has type $\tau_1 + \tau_2$ given that $e$ has type $\tau_1$, and similarly for 
-\ruleref{In-r}. The \ruleref{Case} rule is the destructor for the sum type which branches on either
+to derive that inl $(e)$ has type $\tau_1 + \tau_2$ given that $e$ has type $\tau_1$, and similarly for 
+\ruleref{In-l}. The \ruleref{Case} rule is the destructor for the sum type which branches on either
 side depending on the specific instance given. %???? strange explanation%
 The \ruleref{Pair} rule allows us to construct a product type $\tau_1 \times \tau_2$ given two variables
 with each of those types. \ruleref{Prj-l} destructs some pair with a product type $\tau_1 \times \tau_2$ 
@@ -114,102 +132,112 @@ into a variable with type $\tau_1$, and similarly \ruleref{Prj-r} will destruct 
 with type $\tau_2$. 
 The \ruleref{Abs} rule refers to lambda abstraction and is a constructor for the product type. It allows
 us to create a function $\lambda x. e : \sigma \rightarrow \tau$ if we can obtain some $e$ of type $\tau$
-from $\Gamma$ and $x: \sigma$. The \ruleref{App} rule is the destructor of the function type - function 
+from $\Gamma, x: \sigma$. The \ruleref{App} rule is the destructor of the function type - function 
 application. If we have some function $e_1: \sigma \rightarrow \tau$ and some variable $e_2$ of type 
 $\sigma$ then we can apply the function $e_1$ to $e_2$ and obtain a result with type $\tau$.
 \\
+
+\section{Dynamics}
+
 \noindent
 Along with the simply typed lambda calculus being well-typed, we also need it to be type safe. If we 
-have a variable of a certain type then we must have that the following properties hold:
+have a variable of a certain type then we must have that the following properties hold: \\
 
-\paragraph{Progress:} If we have some variable $e$ where $\vdash \DeclVar{e}{\tau}$ then either $e$ is a 
-value, or $e \Step e'$ for some $e'$.
 \noindent
-\paragraph{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ then we must have 
+%\textbf{Finality:} If $e$ val then there is no $e'$ where $e \Step e'$. \\\\
+%\textbf{Determinism:} If $e \Step e_1$ and $e \Step e_2$ then $e_1 \equiv e_2$. \\\\
+\textbf{Progress:} If we have some variable $e$ where $\vdash \DeclVar{e}{\tau}$ either $e$ is a 
+value, or $e \Step e'$ for some $e'$. \\\\
+\textbf{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ we must have 
 $\vdash \DeclVar{e'}{\tau}$.
 
+\begin{figure}
+    \begin{mathpar}
+        \inferH{Val-Unit}{
+        }{
+            \UnitV \ \text{val}
+        }\qquad
+        \inferH{Val-In-l}{
+        }{
+            \LamInl{e} \ \text{val}
+        }\qquad
+        \inferH{Val-In-r}{
+        }{
+            \LamInr{e} \ \text{val}
+        }\qquad
+        \inferH{Val-Pair}{
+        }{
+            \Tuple{e_1}{e_2} \ \text{val}
+        }\qquad
+        \inferH{Val-Abs}{
+        }{
+            \Lam{x}[\sigma]{e} \ \text{val}
+        }\\
+        \inferH{D-Case-In-l}{
+        }{
+            \LamCase{\LamInl{e}}{x}{e_1}{y}{e_2} \Step e_1[e/x]
+        }\qquad
+        \inferH{D-Case-In-r}{
+        }{
+            \LamCase{\LamInr{e}}{x}{e_1}{y}{e_2} \Step e_2[e/y]
+        }\\
+        \inferH{D-Case}{
+            e \Step e'
+        }{
+            \LamCase{e}{x}{e_1}{y}{e_2} \Step \LamCase{e'}{x}{e_1}{y}{e_2}
+        }\\
+        \inferH{D-Prj-Pair-l}{
+        }{
+            \Proj{\Tuple{e_1}{e_2}} \Step \Proj{e_1}
+        }\qquad
+        \inferH{D-Prj-Pair-r}{
+        }{
+            \Proj[2]{\Tuple{e_1}{e_2}} \Step \Proj[2]{e_2}
+        }\\
+        \inferH{D-Prj-l}{
+            e \Step e'
+        }{
+            \Proj{e} \Step \Proj{e'}
+        }\qquad
+        \inferH{D-Prj-r}{
+            e \Step e'
+        }{
+            \Proj[2]{e} \Step \Proj[2]{e'}
+        }\\
+        \inferH{D-Beta}{
+        }{
+            (\Lam{x}[\sigma]{e_1})(e_2) \Step e_1[e_2/x]
+        }\qquad
+        \inferH{D-App}{
+            e_1 \Step e'_1
+        }{
+            e_1(e_2) \Step e'_1(e_2)
+        }
+    \end{mathpar}
+    \caption{Dynamic Rules for the Simply Typed Lambda Calculus}
+    \label{fig: dr stlc}
+\end{figure}
+
 \noindent
-These type-safety properties refer to the dynamics of the lambda calculus which are as follows.
+Again we have premises above the line and conclusions below the line. However, here 
+we make use of $e_1 \Step e_2$ to signify a transition from one term to another. This 
+transition can be thought of as a change of state from $e_1$ to $e_2$. Clearly, any 
+"val" rule simply states that terms of the given structure are values and thus cannot 
+transition. Apart from these val rules, we have two distinct transition types: instruction 
+transitions which perform computation and require no premises, and search transitions 
+which allow for subterm computation. Together, these determine the order of evaluation of 
+terms.
 
-\begin{mathpar}
-    \inferH{Val-Unit}{
-    }{
-        \UnitV \ \text{val}
-    }\qquad
-    \inferH{Val-In-l}{
-    }{
-        \LamInl{e} \ \text{val}
-    }\qquad
-    \inferH{Val-In-r}{
-    }{
-        \LamInr{e} \ \text{val}
-    }\qquad
-    \inferH{Val-Pair}{
-    }{
-        \Tuple{e_1}{e_2} \ \text{val}
-    }\qquad
-    \inferH{Val-Abs}{
-    }{
-        \Lam{x}[\sigma]{e} \ \text{val}
-    }\\
-    \inferH{D-Case-In-l}{
-    }{
-        \LamCase{\LamInl{e}}{x}{e_1}{y}{e_2} \Step e_1[e/x]
-    }\qquad
-    \inferH{D-Case-In-r}{
-    }{
-        \LamCase{\LamInr{e}}{x}{e_1}{y}{e_2} \Step e_2[e/y]
-    }\\
-    \inferH{D-Case}{
-        e \Step e'
-    }{
-        \LamCase{e}{x}{e_1}{y}{e_2} \Step \LamCase{e'}{x}{e_1}{y}{e_2}
-    }\\
-    \inferH{D-Prj-Pair-l}{
-    }{
-        \Proj{\Tuple{e_1}{e_2}} \Step \Proj{e_1}
-    }\qquad
-    \inferH{D-Prj-Pair-l}{
-    }{
-        \Proj[2]{\Tuple{e_1}{e_2}} \Step \Proj[2]{e_2}
-    }\\
-    \inferH{D-Prj-l}{
-        e \Step e'
-    }{
-        \Proj{e} \Step \Proj{e'}
-    }\qquad
-    \inferH{D-Prj-r}{
-        e \Step e'
-    }{
-        \Proj[2]{e} \Step \Proj[2]{e'}
-    }\\
-    \inferH{D-Beta}{
-    }{
-        (\Lam{x}[\sigma]{e_1})(e_2) \Step e_1[e_2/x]
-    }\qquad
-    \inferH{D-App}{
-        e_1 \Step e'_1
-    }{
-        e_1(e_2) \Step e'_1(e_2)
-    }
-\end{mathpar}
+The \ruleref{D-Case-In-l} rule substitutes $e$ for $x$ in $e_1$ if we have $\LamInl{e}$ 
+and \ruleref{D-Case-In-r} performs the same substitution in $e_2$ if we have $\LamInr{e}$. 
+The \ruleref{D-Case} rule transitions from a case statement with $e$ to the same case statement 
+but with $e'$ if $e \Step e'$. \ruleref{D-Prj-Pair-l} offers the left projection of a pair, 
+and similarly \ruleref{D-Prj-Pair-r} offers the right projection. \ruleref{D-Prj-l} and 
+\ruleref{D-Prj-r} transition from the projection of $e$ to the projection of $e'$ if 
+$e \Step e'$. The \ruleref{D-Beta} rule performs a beta reduction on a lambda term and 
+\ruleref{D-App} transitions from the application $e_1 (e_2)$ to $e'_1 (e_2)$ if 
+$e_1 \Step e'_1$.
 
-% \noindent
-% This chapter is intended to describe the technical basis on which execution
-% of the project depends.  The goal is to provide a detailed explanation of
-% the specific problem at hand, and existing work that is relevant (e.g., an
-% existing algorithm that you use, alternative solutions proposed, supporting
-% technologies).  
-
-% Per the same advice in the handbook, note there is a subtly difference from
-% this and a full-blown literature review (or survey).  The latter might try
-% to capture and organise (e.g., categorise somehow) {\em all} related work,
-% potentially offering meta-analysis, whereas here the goal is simple to
-% ensure the dissertation is self-contained.  Put another way, after reading 
-% this chapter a non-expert reader should have obtained enough background to 
-% understand what {\em you} have done (by reading subsequent sections), then 
-% accurately assess your work.  You might view an additional goal as giving 
-% the reader confidence that you are able to absorb, understand and clearly 
-% communicate highly technical material.
+%proof of progress and preservation for stlc?
 
 % -----------------------------------------------------------------------------
