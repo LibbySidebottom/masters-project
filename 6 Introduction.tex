@@ -1,0 +1,69 @@
+\chapter{Introduction}
+\label{chap: intro}
+
+% The problem - no one ever wrote any basic explanation on CLL so the literature on the subject is very 
+% inaccessible. The goal - to introduce CLL in an accessible format and to provide a translation from the 
+% Lambda Calculus to CLL.
+
+\noindent
+There is no lack of literature on classical linear logic (CLL), however almost all of it assumes a reasonable 
+level of prior knowledge on the subject. This would not be a problem if someone had written down all the 
+rules and explained the purpose of CLL. Unfortunately, no one thought to do such a thing and so the rules 
+are taught to students by supervisors in a one-on-one setting. The first aim of this report is to present 
+the rules of classical linear logic such that someone who has no prior knowledge can come away knowing 
+enough to approach more literature on the topic without feeling out of depth. We will then provide a 
+translation from the simply typed lambda calculus into classical linear logic which has been considered 
+by many prominent figures, but never been written out in full. \\
+
+\noindent
+There are two forms of logic: classical logic, and constructive logic (also called intuitionistic logic). 
+Classical logic is the foundation for classical mathematics and has a few defining features including 
+logical operations, structural rules, and double negation. Logical operations connect two or more statements 
+such as $+, \otimes$, etc. Structural rules are operations performed directly on judgements or sequents such 
+as weakening and exchange. Double negation is the assertation that if a proposition P is true then the inverse 
+of it's inverse is also true, $P = \neg \neg P$. Statements in classical logic can be either 
+true or false, and cannot be undetermined. More specifically, if we have some proposition P, either P is 
+true, or the negation of P is true. This means we can use proof by contradiction to show that a proposition 
+is true if its negation is false. Put simply, in classical logic, a statement is true if it is not false. \\
+
+\noindent
+In constructive logic, we have a stronger notion of truth. We only accept a proposition as true if it has a 
+constructive proof, so in order to prove an object exists we must either provide an example of such an object or 
+explain how we would create it. Dually, we only accept a proposition to be false if we have a refutation of it in 
+constructive logic. There is no expectation that a proposition be either true or false, it can simply be a proposition. 
+Constructive logic is a logic of positive evidence which makes it more expressive than classical logic. Any 
+proof of a proposition in classical logic can be translated into a proof of a weaker (although calssically 
+equivalent) proposition in constructive logic. \\
+
+\noindent
+Our main topic is classical linear logic which was first presented by Girard as an extension of constructive logic 
+with a classical framework. CLL is a substructural logic which makes use of double negation from classical logic, and 
+constructivism from intuitionistic logic. The addition of exponentials allows us to use structural rules to some extent. 
+It has a number of applications in computer science, namely in reasoning about resources, resource useage, ownership, 
+and communication. The latter is seen under the Curry-Howard isomorphism and is the aspect we will be focusing on. \\
+
+\noindent
+The Curry-Howard isomorphism is a correspondence between proof systems and type systems where we see propositions as 
+types, proofs as programs, and normalisation as computation. Here we use a variant of this found by Caires and Pfenning 
+\cite{caires2010} with 
+\begin{align*}
+    \text{propositions }& \text{as session types,} \\
+    \text{proofs } & \text{as processes,} \\
+    \text{cut elimination } & \text{as computation.} 
+\end{align*}
+
+\noindent
+This variant equates classical linear logic with a process calculus similar to the $\pi$-calculus and allows 
+us to model classical linear logic as a parallel programming language. For this report we will use Wadler's 
+\cite{wadler2014} variant on the $\pi$-calculus which he combines with CLL to create a session-typed process calculus, 
+classical processes (CP). Wadler's variant extends the $\pi$-calculus so it has processes corresponding to 
+each of the typing judgements needed for CLL. For each logical proposition we have a session type which 
+describes a type for the communicating protocols. Session types  allow us to describe how two processes 
+communicate along a channel. They are most often used in relation to the $\pi$-calculus which was introduced 
+by Milner \cite{milner1992} as a way to model processes which communicate concurrently. \\
+
+\noindent
+When Girard first introduced classical linear logic \cite{girard1987}, he suggested that the multiplicative fragment 
+on CLL has obvious links to parallel computation. 
+
+% -----------------------------------------------------------------------------

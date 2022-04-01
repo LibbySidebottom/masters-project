@@ -1,0 +1,310 @@
+\chapter{Translation}
+
+Here we present a translation from the simply typed lambda calculus into classical linear logic. First 
+we will give the direct translation of each type, then a detailed derivation of how we got there. We 
+make use of the $^{\circ}$ symbol to denote translation of a type. On the left hand side we have the lambda 
+calculus type, and on the right we have its classical linear logic proposition.
+
+\begin{align*}
+    (1)^\circ &= \top^\circ \\
+    (A + B)^\circ &= A^\circ \oplus B^\circ \\
+    (A \times B)^\circ &= A^\circ \otimes B^\circ \\
+    (A \rightarrow B)^\circ &= \negg{(\ofc A^\circ)} \parr B^\circ
+\end{align*} 
+
+\noindent
+The translations of 1, $(A + B)$, and $(A \times B)$ are as one would expect, however the translation 
+of $(A \rightarrow B)$ makes use negation since we use some A to acquire some B. The exponential $\ofc A^\circ$ 
+indicates that we can use our function multiple times, rather than just once. If we had just 
+$\negg{A^\circ} \parr B^\circ$ on the CLL side, we would only be able to use the function once as we 
+only have access to one $\negg{A^\circ}$. \\
+
+\noindent
+The translation of some environment $\Gamma$ is as follows:
+
+\begin{align*}
+  \Gamma^\circ & \\
+  (\cdot)^\circ &= \cdot \\
+  (\Gamma, x:A)^\circ &= \Gamma^\circ, x: \negg{(\ofc A^\circ)} \\
+   &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
+\end{align*} 
+
+\noindent
+If we have a protocol $x:A$ from the lambda calculus, translates to $x: \negg{(\ofc A^\circ)}$. The negation 
+occurs because contexts in the lambda calculus occur on the left hand side, but we only have right-handed 
+sequents in classical linear logic. More interestingly, we have the exponentiation of A rather than just A. 
+This is because in the lambda calculus we may use a protocol as many times as we wish if it occurs in the 
+context, but in classical linear logic we may only use something exactly as many times as it occurs. Hence, 
+we have the exponentiation $(\ofc A^\circ)$ to indicate that we may use $A^\circ$ as many times as we desire. \\
+
+\noindent
+We will need a derivable rule, \ruleref{Depar} which takes a concurrent process $A \parr B$ communicating 
+along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate channels. \\
+
+\begin{mathpar}
+  \inferH{}{
+    \inferH{}{
+      \IsProc{\Link{w}{x}}{\Name{x}: A, \Name{w}: \negg{A}}\\
+      \IsProc{\Link{y}{z}}{\Name{y}: B, \Name{z}: \negg{B}}
+    }{
+      \IsProc{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})}}{\Name{x}: A, \Name{y}: B, \Name{z}: \negg{A} \otimes \negg{B}}
+    }\\
+    \inferH{}{
+    }{
+      \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+    }
+  }{
+    \IsProc{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} P}}{\Gamma, \Name{x}: A, \Name{y}: B}
+  }\quad \leadsto \quad
+  \inferH{Depar}{
+    \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+  }{
+    \IsProc{\Depar{x}{y}{P}}{\Gamma, \Name{x}: A, \Name{y}: B}
+  }
+\end{mathpar}
+
+\begin{figure}[!]
+  \begin{mathpar}
+      %var
+      {\Biggl\llbracket
+      \inferH{T-Var}{
+      }{
+          \Gamma, x: A \vdash x: A
+      }\Biggr\rrbracket}_\Name{x}
+      \EqDef
+      \inferH{}{
+          \inferH{}{
+          \IsProc{\Link{x}{y}}{\Name{x}: \negg{(A^\circ)}, \Name{y}: A^\circ}
+          }{
+              \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+          }
+      }{
+          \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Gamma^\circ, \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+      }\\
+
+      %unit
+      {\Biggl\llbracket
+      \inferH{T-Unit}{
+      }{
+      \Gamma \vdash \langle \rangle : 1
+      }\Biggr\rrbracket}_\Name{x}
+      \EqDef
+      \inferH{}{
+      }{
+      \IsProc{\EmCase{x}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+      }\\
+
+      %left injection
+      {\Biggl\llbracket
+      \inferH{T-In-l}{
+        \Gamma \vdash M:A
+      }{
+        \Gamma \vdash \LamInl{M}: A+B
+      }\Biggr\rrbracket}_\Name{x}
+      \EqDef
+      \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ}
+      }{
+        \IsProc{\Inl{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+      }\\
+
+      %right injection
+      {\Biggl\llbracket
+      \inferH{T-In-r}{
+        \Gamma \vdash M:B
+      }{
+        \Gamma \vdash \LamInr{M}: A+B
+      }\Biggr\rrbracket}_\Name{x}
+      \EqDef
+      \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: B^\circ}
+      }{
+        \IsProc{\Inr{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
+      }\\
+
+      %case
+      \Biggl\llbracket
+      \inferH{T-Case}{
+        \Gamma \vdash M: A+B \\
+        \Gamma, x:A \vdash P:C \\
+        \Gamma, x:B \vdash Q:C
+      }{
+        \Gamma \vdash \LamCase{M}{x}{P}{x}{Q}:C
+      }\Biggr\rrbracket_\Name{x}
+      \EqDef
+      \inferH{}{
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+        \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)}} \\
+        \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(B^\circ)}}
+      }{
+          \inferH{}{
+          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
+          \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)} \with \negg{(B^\circ)}}
+        }{
+            \inferH{}{
+            \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+          }{
+            \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+      }}}
+
+      %product
+      {\Biggl\llbracket
+      \inferH{T-Prod}{
+      \Gamma \vdash M : A \\
+      \Gamma \vdash N : B
+      }{
+      \Gamma \vdash \Tuple{M}{N} : A \times B
+      }\Biggr\rrbracket}_{\Name{x}}
+      \EqDef
+      \inferH{}{
+      \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : A^{\circ}} \\
+      \IsProc{\llbracket N \rrbracket_\Name{x}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+      }{
+      \IsProc{\Casep{x}{{\llbracket M \rrbracket}_\Name{x}}{{\llbracket N \rrbracket}_\Name{x}}}{\Gamma^{\circ}, \Name{x} : A^{\circ} \with B^{\circ}}
+      }\\
+
+      %left projection
+      {\Biggl\llbracket
+      \inferH{T-Prj-l}{
+      \Gamma \vdash M : A \times B
+      }{
+      \Gamma \vdash \Proj{M} : A
+      }\Biggr\rrbracket}_{\Name{x}}
+      \EqDef
+      \inferH{}{
+      \inferH{}{
+          \IsProc{\Link{x}{y}}{\Name{x} : A^\circ, \Name{y} : \negg{(A^{\circ})}}
+      }{
+      \IsProc{\Inl{y}{\Link{x}{y}}}{\Name{x} : A^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+      }\\
+      \inferH{}{
+      }{
+          \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+      }}{
+      \IsProc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} {\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : A^{\circ}}
+      }\\
+
+      %right projection
+      {\Biggl\llbracket
+      \inferH{T-Prj-r}{
+      \Gamma \vdash M : A \times B
+      }{
+      \Gamma \vdash \Proj[2]{M} : B
+      }\Biggr\rrbracket}_{\Name{x}}
+      \EqDef
+      \inferH{}{
+      \inferH{}{
+          \IsProc{\Link{x}{y}}{\Name{x} : B^\circ, \Name{y} : \negg{(B^{\circ})}}
+      }{
+      \IsProc{\Inr{y}{\Link{x}{y}}}{\Name{x} : B^{\circ}, \Name{y} : \negg{(A^{\circ})} \oplus \negg{(B^{\circ})}} \\
+      }\\
+      \inferH{}{
+      }{
+          \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{y} : A^{\circ} \with B^{\circ}}
+      }}{
+      \IsProc{\New*{y}{}{\Inr{y}{\Link{y}{x}} \mathbin{|} {\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{x} : B^{\circ}}
+      }\\
+
+      %lambda abstraction
+      {\Biggl\llbracket 
+      \inferH{T-Lam}{
+      \Gamma, x :A \vdash M :B
+      }{
+      \Gamma \vdash \Lam{x}[A]{M} : A \rightarrow B
+      } \Biggr\rrbracket}_{\Name{y}}
+      \EqDef
+      \inferH{}{
+      \IsProc{{\llbracket M \rrbracket}_\Name{y}}{\Gamma^{\circ}, \Name{x} : \negg{(\ofc A^{\circ})}, \Name{y} : B^{\circ}}
+      }{
+      \IsProc{\In{y}{x}{{\llbracket M \rrbracket}_\Name{y}}}{\Gamma^{\circ}, \Name{y} : \negg{(\ofc A^{\circ})} \parr B^{\circ}}
+      }\\
+
+      %application
+      \Biggl\llbracket 
+      \inferH{T-App}{
+        \Gamma \vdash M:A \rightarrow B \\
+        \Gamma \vdash N:A
+      }{
+        \Gamma \vdash MN:B
+      }\Biggr\rrbracket_\Name{y}
+      \EqDef
+      \inferH{}{
+        \inferH{}{
+          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)} \parr B^\circ}
+        }{
+          \IsProc{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
+        }\\
+        \inferH{}{
+          \IsProc{\llbracket N \rrbracket_\Name{y}}{\Gamma^\dagger, \Name{y^\dagger}: A^\circ}
+        }{
+          \IsProc{\ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
+        }
+      }{
+        \IsProc{\New*{x}{}{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}} \mathbin{|} \ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
+      }
+  \end{mathpar}
+  \caption{Translation from the simply typed lambda calculus into classical linear logic}
+  \label{fig: translatioin}
+\end{figure}
+
+\noindent
+It is interesting to note that we have an inversion of polarity from the lambda calculus 
+to classical linear logic. All type constructors in the lambda calculus become destructors 
+in CLL and vice verca. %why?? \\
+
+\noindent
+For our translation \ruleref{T-Var} with respect to $x$, we begin with the CLL axiom to  
+give us two channels following dual protocols $A^\circ$ and $\negg{(A^\circ)}$. We then use 
+dereliction to request $x$, and therefore the protocol $\whynot \negg{(A^\circ)}$ 
+on a new channel $z$. Finally we use weakening to acquire an environment $\Gamma^\circ$ 
+which we do not use. This gives us a typing judgement which is equivalent to the variable 
+judgement in the lambda calculus. Of course as we are in CLL, we can only have processes 
+on the right hand side of the judgement, so 
+\begin{mathpar}
+  \Gamma, x:A \vdash \dots \quad \text{becomes} \quad \vdash \Gamma, x: \negg{A}
+\end{mathpar}
+(ignoring the other effects of translation). So, our final judgement says link 
+$x: \negg{(A^\circ)}$ with $y: A^\circ$, then request $x: \negg{(A^\circ)}$ on a new channel $z$. \\
+
+\noindent
+For \ruleref{T-Unit} we simply use the empty case statement along with the unit for with. 
+So, we create a channel $x$ with no protocols communicating along it. \\
+
+\noindent
+The translation for \ruleref{T-In-l} is fairly straightforward. We select the left choice 
+from two protocols communicating on channel $x$ then execute the process $\llbracket M \rrbracket_x$. 
+This process is simply the translation of $M$ with respect to $x$. The translation of 
+\ruleref{T-In-r} is equivalent, but we select the right choice. \\
+
+\noindent
+For the translation \ruleref{T-Case}, we use the anti-Barendregt convention and conveniently 
+name variables in such a way that we do not have to rename them in the future. As in the 
+lambda calculus, we start with three separate processes, each with the same environment. Our 
+first step is to use the with rule to offer a choice between protocols $\negg{(A^\circ)}$ and 
+$\negg{(B^\circ)}$ on channel $x$. Then we use the cut rule to connect the protocols on channel 
+$x$. We then use contraction multiple times to remove copies of $\Gamma^\circ$ and $C^\circ$ 
+and allow our process to communicate along one channel. \\
+
+\noindent
+For \ruleref{T-Prod} we simply use the with rule to offer a choice between protocols $A^\circ$ 
+and $B^\circ$. \\
+
+\noindent
+The translation \ruleref{T-Prj-l} begins with the two dual protocols then requests the left 
+option from a choice sent along $y$. We then use the cut rule to connect the dual protocols on 
+channel $y$ and acquire the left projection of the pair $A^\circ \with B^\circ$. The translation 
+of \ruleref{T-Prj-r} is analogous. \\
+
+\noindent
+Our translation \ruleref{T-Lam} with respect to $y$ uses the par rule to input $\negg{(\ofc A^\circ)}$ 
+along channel $y$ then continue as $B$. We use `of course' to indicate that we can apply our function 
+$\llbracket M \rrbracket_y$ to multiple inputs of the form $\negg{(A^\circ)}$. \\
+
+\noindent
+more thinking here
+Finally, \ruleref{T-App} uses our derivable rule depar to 
+
+to disconnect a concurrent protocol then 
+use the cut rule to connect the dual protocols and output our desired protocol $B^\circ$.
+
+% -----------------------------------------------------------------------------

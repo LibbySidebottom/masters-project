@@ -1,13 +1,14 @@
 \chapter{Classical Linear Logic}
 \label{chap:execution}
 
-Classical linear logic (CLL) is a sequent calculus which differs from classical logic in a few ways.
-The first is the addition of linear negation.
+Classical linear logic (CLL) is a sequent calculus which differs from both classical and intuitionistic 
+logic in a number of ways. 
 In classical linear logic variables are denoted by capital letters $A, B, ...$ and the duals to these 
 variables are denoted $\negg{A}, \negg{B}, ...$ where $\negg{A}$ is the negation of A such that 
 $\negg{\negg{A}} = A$. This negation is not present in intuitionistic linear logic, but is a large part 
-of classical linear logic and all propositions have a dual. 
+of classical linear logic and all propositions have a dual. \\
 
+\noindent
 The next difference is that we replace the usual two-sided sequent with a one-sided sequent, so a sequent 
 in classical logic such as:
 \begin{mathpar}
@@ -19,12 +20,14 @@ would read as
 \end{mathpar}
 in classical linear logic.
 This makes CLL slightly easier to read as we don't have to worry about propositions on the left-hand 
-side of our sequent. We can see the use linear negation in our new one-sided sequent.
+side of our sequent. We can see the use linear negation in our new one-sided sequent. \\
 
+\noindent
 We also have that any proposition must be used exactly as many times as it appears. We cannot have some 
 proposition $A$ and not make use of it, and similarly we cannot use it any more than once if it only appears 
-once. 
+once. \\
 
+\noindent
 Our propositions for CLL are as follows:
 
 \begin{figure}[h]
@@ -56,26 +59,32 @@ vending machine which says \emph{Tea} $\oplus$ \emph{Coffee} will take our \poun
 for us. Par is not quite so easy to describe, if we stay with our vending machines then we would most likely see 
 $\pounds 1 \ \parr$ \emph{Tea} which would imply that inserting \pounds 1 into the vending machine will then give us Tea. 
 Having a term $A \parr B$ in classical linear logic is equivalent to having a term $\negg{A} \multimap B$ in linear logic:
-"not A linearly implies B".
+``not A linearly implies B''. \\
+
+\noindent
 The exponential fragment also fits in with this slightly differently. If we have a term $\ofc \pounds 1$ this would indicate 
 that we have multiple \pounds 1 coins which we may use at the vending machine. We may also see a term $\whynot \pounds 1$ 
 on any of these vending machines which would indicate that it is possible to use the machine more than once by inserting 
 multiple \pounds 1 coins. Both of course ($\ofc$) and why not ($\whynot$) mean that whatever follows it can be used any 
-number of times, or even never used at all.
-\\\\
+number of times, or even never used at all. \\
+
 \noindent
-For this report, we will modify these definitions slightly so they fit with our process calculus.
+For this report, we will modify these definitions slightly so they fit with our process calculus. \\
 
+\noindent
 Tensor, $A \otimes B$ represents multiplicative conjunction and means output A, then continue as B. The dual to tensor 
-is par which represents multiplicative disjunction. We would read $A \parr B$ as input A, then continue as B. 
+is par which represents multiplicative disjunction. We would read $A \parr B$ as input A, then continue as B. \\
 
+\noindent
 We have plus for additive disjunction so $A \oplus B$ means select either A or B.  Dual to this we have with: 
-$A \with B$ meaning offer a choice between A and B. 
+$A \with B$ meaning offer a choice between A and B. \\
 
+\noindent
 Our exponential component consists of of course and why not, where 
 $\ofc A$ means we have a server which can accept many copies of A, and $\whynot A$ means we have a client 
-who may request many copies of A. 
+who may request many copies of A. \\
 
+\noindent
 It is important to note that every proposition has a dual, specifically:
 
 \begin{align*}
@@ -92,13 +101,13 @@ alongside a process calculus similar to $\pi$ calculus. The processes for which 
   \begin{align*}
     \Proc{P} ::= & \\
     & \Proc{P \mathbin{|} Q} & \text{parallel composition} \\
-    & \Proc{\Link{x}{y}} & \text{link \Name{x} with \Name{y}} \\
-    & \Proc{\Out{y}{x}{P}} & \text{output \Name{x} on channel \Name{y}} \\
-    & \Proc{\In{y}{x}{P}} & \text{input \Name{x} on channel \Name{y}} \\
+    & \Proc{\Link{x}{y}} & \text{link $\Name{x}$ with $\Name{y}$} \\
+    & \Proc{\Out{y}{x}{P}} & \text{output $\Name{x}$ on channel $\Name{y}$} \\
+    & \Proc{\In{y}{x}{P}} & \text{input $\Name{x}$ on channel $\Name{y}$} \\
     & \Proc{\Inl{x}{P}} & \text{left selection} \\
     & \Proc{\Inr{x}{P}} & \text{right selection} \\
     & \Proc{\Casep{x}{P}{Q}} & \text{choice} \\
-    & \Proc{\New*{x}{}{P \mathbin{|} Q}} & \text{connect on channel \Name{x}} \\
+    & \Proc{\New*{x}{}{P \mathbin{|} Q}} & \text{connect on channel $\Name{x}$} \\
     & \Proc{\whynot \Out{y}{x}{P}} & \text{client request} \\
     & \Proc{\ofc \In{y}{x}{P}} & \text{server accept} \\
     & \Proc{\Out{y}{\ }{P}} & \text{empty output} \\
@@ -106,12 +115,12 @@ alongside a process calculus similar to $\pi$ calculus. The processes for which 
     & \Proc{\EmCase{x}} & \text{empty choice} \\
     & \Proc{P[\Name{x} / \Name{y}]} & \text{substitution}
   \end{align*}
-  \caption{Classical Processes (CP)}
+  \caption{Process Calculus for CLL}
   \label{fig: p cp}
 \end{figure}
 
 \noindent
-A process $\Proc{P}$ in CP can take on a few forms. Link says that we can connect two channels in 
+A process $\Proc{P}$ can take on a few forms. Link says that we can connect two channels in 
 such a way that any message delivered to $\Name{y}$ will be forwarded over $\Name{x}$ and vice verca.
 For an output such as $\Proc{\Out{y}{x}{(P \mathbin{|} Q)}}$ we have that $\Name{y}$ is bound in 
 $\Proc{P}$, but is not bound in $\Proc{Q}$. For the input $\Proc{\In{y}{x}{P}}$, $\Name{y}$ is bound 
@@ -122,15 +131,15 @@ $\Name{x}$ is bound in $\Proc{P}$, and similarly for $\Proc{\Out{\whynot y}{x}{P
 \section{Rules for CLL}
 
 \noindent
-We can now combine our process calculus CP with our propositions for CLL and present the rules for 
+We can now combine our process calculus with our propositions for CLL and present the rules for 
 classical linear logic alongside their corresponding processes. Our typing judgements have the form 
-$\IsProc{P}{\Gamma, \Name{x}: A}$ where \Proc{P} is a CP process, $\Gamma$ is a type environment, 
+$\IsProc{P}{\Gamma, \Name{x}: A}$ where \Proc{P} is a process, $\Gamma$ is a type environment, 
 $\Name{x}$ is a channel, and $A$ is a CLL proposition. This typing judgement means we have some process 
 \Proc{P} communicating along channel $\Name{x}$ obeying protocol $A$. Processes can communicate over 
 multiple channels following different protocols, and as we saw in \ref{fig: p cp} the processes 
 may also take on varying forms.
 
-\begin{figure}[h]
+\begin{figure}[!]
   \begin{mathpar}
     \inferH{Axiom}{
     }{
@@ -209,35 +218,38 @@ may also take on varying forms.
       \IsProc{\EmCase{x}}{\Gamma, \Name{x}: \top}
     }
   \end{mathpar}
-  \caption{Rules for Classical Linear Logic with CP}
+  \caption{Rules for Classical Linear Logic}
   \label{fig: r cll cp}
 \end{figure}
 
 \noindent
 The \ruleref{Axiom} states that if we have some variable A, then we also have its dual $\negg{A}$. 
-For the CP side of things, we see that if we have two channels following dual protocols then any 
-input along \Name{x} is sent as output along \Name{y}.
+For the process calculus, we see that if we have two channels following dual protocols then any 
+input along $\Name{x}$ is sent as output along $\Name{y}$.
 The \ruleref{Cut} rule allows us to connect two processes together. As the protocols are dual, 
 any transmissions and selections over one correspond with receives and choices over the other. This 
-along with communication only via one channel ensures that the processes cannot get stuck.
+along with communication only via one channel ensures that the processes cannot get stuck. \\
 
+\noindent
 The \ruleref{Tensor} rule outputs a fresh channel x along y, then continues as P and Q in parallel.
 As P and Q communicate over different channels, we have disjoint concurrency so the processes cannot 
-communicate with each other. The new process, $\Proc{P \mathbin{|} Q}$ communicates over channel \Name{y}.
+communicate with each other. The new process, $\Proc{P \mathbin{|} Q}$ communicates over channel $\Name{y}$.
 The rule \ruleref{Par} inputs A, then continues as B. This is known as connected concurrency as P can 
-communicate along both \Name{x} and \Name{y}.
+communicate along both $\Name{x}$ and $\Name{y}$. \\
 
+\noindent
 The rule \ruleref{Plus-L} indicates left selection, and similarly \ruleref{Plus-R} indicates right 
 selection. The process $\Proc{\Inl{x}{P}}$ obeys protocol $A \oplus B$ by requesting the left option 
 from a choice sent along $x$. The process for $\Proc{\Inr{x}{P}}$ is symmetric. 
-The \ruleref{With} rule offers a choice between processes \Proc{P} and \Proc{Q}. The new process 
-$\Proc{\Casep{x}{P}{Q}}$ will receive a selection over channel $x$ and execute either \Proc{P} or 
-\Proc{Q} accordingly.
+The \ruleref{With} rule offers a choice between processes $\Proc{P}$ and $\Proc{Q}$. The new process 
+$\Proc{\Casep{x}{P}{Q}}$ will receive a selection over channel $x$ and execute either $\Proc{P}$ or 
+$\Proc{Q}$ accordingly. \\
 
+\noindent
 \ruleref{Weakening} lets us consider a process which doesn't communicate or follow a protocol to be 
 a process which communicates along a channel $\Name{x}$ with protocol \whynot A. 
-If a process \Proc{P} communicates along two channels, both following the same protocol \whynot A, 
-then we can use \ruleref{Contraction} to substitute one channel for another so \Proc{P} communicates 
+If a process $\Proc{P}$ communicates along two channels, both following the same protocol \whynot A, 
+then we can use \ruleref{Contraction} to substitute one channel for another so $\Proc{P}$ communicates 
 along only one channel following protocol \whynot A.
 \ruleref{Dereliction} allows us to.
 
@@ -413,43 +425,5 @@ terms via cut reduction.
   \IsProc{P}{\Gamma}
 \end{mathpar}
 
-
-
-
-
-% {\bf A topic-specific chapter, of roughly $15$ pages} 
-% \vspace{1cm} 
-
-% \noindent
-% This chapter is intended to describe what you did: the goal is to explain
-% the main activity or activities, of any type, which constituted your work 
-% during the project.  The content is highly topic-specific, but for many 
-% projects it will make sense to split the chapter into two sections: one 
-% will discuss the design of something (e.g., some hardware or software, or 
-% an algorithm, or experiment), including any rationale or decisions made, 
-% and the other will discuss how this design was realised via some form of 
-% implementation.  
-
-% This is, of course, far from ideal for {\em many} project topics.  Some
-% situations which clearly require a different approach include:
-
-% \begin{itemize}
-% \item In a project where asymptotic analysis of some algorithm is the goal,
-%       there is no real ``design and implementation'' in a traditional sense
-%       even though the activity of analysis is clearly within the remit of
-%       this chapter.
-% \item In a project where analysis of some results is as major, or a more
-%       major goal than the implementation that produced them, it might be
-%       sensible to merge this chapter with the next one: the main activity 
-%       is such that discussion of the results cannot be viewed separately.
-% \end{itemize}
-
-% \noindent
-% Note that it is common to include evidence of ``best practice'' project 
-% management (e.g., use of version control, choice of programming language 
-% and so on).  Rather than simply a rote list, make sure any such content 
-% is useful and/or informative in some way: for example, if there was a 
-% decision to be made then explain the trade-offs and implications 
-% involved.
 
 % -----------------------------------------------------------------------------

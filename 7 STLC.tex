@@ -2,15 +2,16 @@
 \label{chap: stlc}
 
 The lambda calculus was invented by Church the 1930s (*) to provide a logical foundation for 
-mathematics. His original system was soon proved to have some logical inconsistencies (*). 
-Church then published in isolation the section of his system meant for dealing with functions 
+mathematics. However, his original system was soon proved to have some logical inconsistencies (*). 
+Church then published the section of his system meant for dealing with functions in isolation 
 which he proved to be consistent. This portion of his original work is now known as the untyped 
-lambda calculus. Later on, he published the simply typed lambda calculus which is also logically 
+lambda calculus. Later on, he published the simply typed lambda calculus \cite{church1940} which is also logically 
 consistent although computationally weaker than its untyped counterpart. Although his original 
 system was designed as a foundation for mathematics, it was largely overlooked by the mathematic 
 community who preferred set theory. It wasn't until the 1960s that the $\lambda$-calculus was 
-discovered to be a useful tool in computer science.
+discovered to be a useful tool in computer science. \\
 
+\noindent
 The simply typed lambda calculus is regarded as the most basic functional programming language. 
 It can be used both as a simple programming language with which we can execute computation, and 
 also as a mathematical object which we can perform proofs upon. Both of these aspects are 
@@ -118,8 +119,9 @@ The rules in \ref{fig: sr stlc} have premises on the top and conclusions on the 
 we know that if we have everything above the line, then we can conclude anything below the line. Rules 
 without any premises are called axioms and require no justification.
 We take a constructor to be a rule which can create something of a certain type, and a destructor to be 
-a rule which 'reduces' something of that type to a 'simpler' type.
+a rule which reduces something of that type to a simpler type. \\
 
+\noindent
 The \ruleref{Var} rule simply states that if we have $x: \sigma$ in some environment $\Gamma$, 
 then we know $x$ has type $\sigma$. The \ruleref{Unit} rule states that if we have an empty pair, then this has 
 the unit type: 1. \ruleref{In-r} is a constructor for the sum type which allows us to use injection 
@@ -149,9 +151,9 @@ have a variable of a certain type then we must have that the following propertie
 \textbf{Progress:} If we have some variable $e$ where $\vdash \DeclVar{e}{\tau}$ either $e$ is a 
 value, or $e \Step e'$ for some $e'$. \\\\
 \textbf{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ we must have 
-$\vdash \DeclVar{e'}{\tau}$.
+$\vdash \DeclVar{e'}{\tau}$. \\
 
-\begin{figure}
+\begin{figure}[h]
     \begin{mathpar}
         \inferH{Val-Unit}{
         }{
@@ -222,12 +224,13 @@ $\vdash \DeclVar{e'}{\tau}$.
 Again we have premises above the line and conclusions below the line. However, here 
 we make use of $e_1 \Step e_2$ to signify a transition from one term to another. This 
 transition can be thought of as a change of state from $e_1$ to $e_2$. Clearly, any 
-"val" rule simply states that terms of the given structure are values and thus cannot 
+``val'' rule simply states that terms of the given structure are values and thus cannot 
 transition. Apart from these val rules, we have two distinct transition types: instruction 
 transitions which perform computation and require no premises, and search transitions 
 which allow for subterm computation. Together, these determine the order of evaluation of 
-terms.
+terms. \\
 
+\noindent
 The \ruleref{D-Case-In-l} rule substitutes $e$ for $x$ in $e_1$ if we have $\LamInl{e}$ 
 and \ruleref{D-Case-In-r} performs the same substitution in $e_2$ if we have $\LamInr{e}$. 
 The \ruleref{D-Case} rule transitions from a case statement with $e$ to the same case statement 
