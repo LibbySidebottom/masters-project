@@ -12,7 +12,7 @@ community who preferred set theory. It wasn't until the 1960s that the $\lambda$
 discovered to be a useful tool in computer science. \\
 
 \noindent
-The simply typed lambda calculus is regarded as the most basic functional programming language. 
+The simply typed lambda calculus ($\lambda$-calculus) is regarded as the most basic functional programming language. 
 It can be used both as a simple programming language with which we can execute computation, and 
 also as a mathematical object which we can perform proofs upon. Both of these aspects are 
 extremely useful to computer scientists. Modelling computation helps us to understand how a 
@@ -38,7 +38,7 @@ is safe.
         & \Lam{x}[\tau]{e} &\text{abstraction} \\
         & e_1 (e_2) &\text{application}
     \end{align*}
-    \caption{Types and Terms for the Simply Typed Lambda Calculus}
+    \caption{Types and Terms for the $\lambda$-Calculus}
     \label{fig: tt stlc}
 \end{figure}
 
@@ -46,15 +46,23 @@ is safe.
 The simply typed lambda calculus is a language for working with functions. If we have some typing
 relation $\Gamma \vdash x: \sigma$ this means that in the context $\Gamma$, $x$ has type $\sigma$,
 and $x$ is said to be well-typed. We can see from \ref{fig: tt stlc} that we have three composite
-types and terms can take on specific forms, the rules for which are shown in \ref{fig: sr stlc}. The
+types, and terms can take on specific forms, the rules for which are shown in \ref{fig: sr stlc}. The
 sum type is used to represent disjoint union so if $\Gamma \vdash x: \tau_1 + \tau_2$ then the type 
 of $x$ is either $\tau_1$ or $\tau_2$. The product type is used to represent pairs, so if we have
 $\Gamma \vdash \langle e_1, e_2 \rangle : \tau_1 \times \tau_2$ then we know that we have both 
 $e_1: \tau_1$ and $e_2: \tau_2$. Finally, the function type is of course used to represent functions
-so if we have $\Gamma \vdash \lambda x: \sigma: \sigma \rightarrow \tau$ then this is equivalent to 
-having some function $f : \sigma \rightarrow \tau$ so we must have that $x: \sigma$ and $f(x): \tau$. 
-So our function $f$ takes in some parameter of type $\sigma$ and outputs a result with type $\tau$.
-\\
+so if we have $\Lam{x}[\sigma]{e}: \sigma \rightarrow \tau$ then this is equivalent to having some 
+function $f : \sigma \rightarrow \tau$ so we must have that $x: \sigma$ and $f(x) = e: \tau$. 
+So our function $f$ takes in some parameter of type $\sigma$ and outputs a result with type $\tau$.\\
+
+\noindent
+The rules in \ref{fig: sr stlc} have premises on the top and conclusions on the bottom. So for any rule
+we know that if we have everything above the line, then we can conclude anything below the line. Rules 
+without any premises are called axioms and require no justification.
+We take a constructor to be a rule which can create something of a certain type, and a destructor to be 
+a rule which reduces something of that type to a simpler type. \\
+
+
 \begin{figure}[h]
     \begin{mathpar}
         \inferH{Var}{
@@ -110,31 +118,24 @@ So our function $f$ takes in some parameter of type $\sigma$ and outputs a resul
             \Gamma \vdash e_1 (e_2): \tau
         }\\
     \end{mathpar}
-    \caption{Static Rules for the Simply Typed Lambda Calculus}
+    \caption{Static Rules for the $\lambda$-Calculus}
     \label{fig: sr stlc}
 \end{figure}
 
 \noindent
-The rules in \ref{fig: sr stlc} have premises on the top and conclusions on the bottom. So for any rule
-we know that if we have everything above the line, then we can conclude anything below the line. Rules 
-without any premises are called axioms and require no justification.
-We take a constructor to be a rule which can create something of a certain type, and a destructor to be 
-a rule which reduces something of that type to a simpler type. \\
-
-\noindent
 The \ruleref{Var} rule simply states that if we have $x: \sigma$ in some environment $\Gamma$, 
 then we know $x$ has type $\sigma$. The \ruleref{Unit} rule states that if we have an empty pair, then this has 
-the unit type: 1. \ruleref{In-r} is a constructor for the sum type which allows us to use injection 
-to derive that inl $(e)$ has type $\tau_1 + \tau_2$ given that $e$ has type $\tau_1$, and similarly for 
+the unit type, 1. \ruleref{In-r} is a constructor for the sum type which allows us to use injection 
+to derive that $\LamInl{e}$ has type $\tau_1 + \tau_2$ given that $e$ has type $\tau_1$, and similarly for 
 \ruleref{In-l}. The \ruleref{Case} rule is the destructor for the sum type which branches on either
 side depending on the specific instance given. %???? strange explanation%
-The \ruleref{Pair} rule allows us to construct a product type $\tau_1 \times \tau_2$ given two variables
+The \ruleref{Pair} rule allows us to construct a product type $\tau_1 \times \tau_2$ given two terms 
 with each of those types. \ruleref{Prj-l} destructs some pair with a product type $\tau_1 \times \tau_2$ 
-into a variable with type $\tau_1$, and similarly \ruleref{Prj-r} will destruct the pair into a variable 
+into a term with type $\tau_1$, and similarly \ruleref{Prj-r} will destruct the pair into a term 
 with type $\tau_2$. 
 The \ruleref{Abs} rule refers to lambda abstraction and is a constructor for the product type. It allows
-us to create a function $\lambda x. e : \sigma \rightarrow \tau$ if we can obtain some $e$ of type $\tau$
-from $\Gamma, x: \sigma$. The \ruleref{App} rule is the destructor of the function type - function 
+us to create a function $\Lam{x}[\sigma]{e} \sigma \rightarrow \tau$ if we can obtain some $e$ of type $\tau$
+from $\Gamma$ and $ x: \sigma$. The \ruleref{App} rule is the destructor of the function type, function 
 application. If we have some function $e_1: \sigma \rightarrow \tau$ and some variable $e_2$ of type 
 $\sigma$ then we can apply the function $e_1$ to $e_2$ and obtain a result with type $\tau$.
 \\
@@ -142,16 +143,31 @@ $\sigma$ then we can apply the function $e_1$ to $e_2$ and obtain a result with 
 \section{Dynamics}
 
 \noindent
-Along with the simply typed lambda calculus being well-typed, we also need it to be type safe. If we 
-have a variable of a certain type then we must have that the following properties hold: \\
+We know how the typing system works for the $\lambda$-calculus, but we also need to understand 
+it's computational behaviour, i.e. the dynamics of a program. To understand these rules fully, we 
+will need the substituition lemma. \\
 
 \noindent
-%\textbf{Finality:} If $e$ val then there is no $e'$ where $e \Step e'$. \\\\
-%\textbf{Determinism:} If $e \Step e_1$ and $e \Step e_2$ then $e_1 \equiv e_2$. \\\\
-\textbf{Progress:} If we have some variable $e$ where $\vdash \DeclVar{e}{\tau}$ either $e$ is a 
-value, or $e \Step e'$ for some $e'$. \\\\
-\textbf{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ we must have 
-$\vdash \DeclVar{e'}{\tau}$. \\
+\textbf{Substituition:} If we have $\Gamma \vdash e: \tau$ and $\Gamma, x: \tau \vdash u: \sigma$, 
+then $\Gamma \vdash u[e/x]: \sigma$. 
+
+\begin{figure}
+    \vspace*{-1em}
+    \begin{align*}
+        x[e/x] &\EqDef e &w[e/x] &\EqDef w \\\\
+        \LamInl{u}[e/x] &\EqDef \LamInl{u[e/x]} &\LamInr{u}[e/x] &\EqDef \LamInr{u[e/x]} \\
+        &\qquad \LamCase{u}{y}{e_1}{z}{e_2}[e/x] &\EqDef \LamCase{u[e/x]}{y}{e_1[e/x]}{z}{e_2[e/x]} \\\\
+        \UnitV[e/x] &\EqDef \UnitV &\Tuple{e_1}{e_2}[e/x] &\EqDef \Tuple{e_1[e/x]}{e_2[e/x]} \\
+        \Proj{u}[e/x] &\EqDef \Proj{u[e/x]} &\Proj[2]{u}[e/x] &\EqDef \Proj[2]{u[e/x]} \\\\
+        (\Lam{w}{u})[e/x] &\EqDef \Lam{w}{u[e/x]} &(e_1 (e_2))[e/x] &\EqDef (e_1[e/x])(e_2[e/x]) \\      
+    \end{align*}
+    \caption{Substitution for the $\lambda$-Calculus}
+    \label{fig: dr stlc}
+\end{figure}
+
+\noindent
+Now we understand how substituition works, we can fully appreciate the dynamic rules 
+for the $\lambda$-calculus which are shown below.
 
 \begin{figure}[h]
     \begin{mathpar}
@@ -190,11 +206,11 @@ $\vdash \DeclVar{e'}{\tau}$. \\
         }\\
         \inferH{D-Prj-Pair-l}{
         }{
-            \Proj{\Tuple{e_1}{e_2}} \Step \Proj{e_1}
+            \Proj{\Tuple{e_1}{e_2}} \Step e_1
         }\qquad
         \inferH{D-Prj-Pair-r}{
         }{
-            \Proj[2]{\Tuple{e_1}{e_2}} \Step \Proj[2]{e_2}
+            \Proj[2]{\Tuple{e_1}{e_2}} \Step e_2
         }\\
         \inferH{D-Prj-l}{
             e \Step e'
@@ -216,7 +232,7 @@ $\vdash \DeclVar{e'}{\tau}$. \\
             e_1(e_2) \Step e'_1(e_2)
         }
     \end{mathpar}
-    \caption{Dynamic Rules for the Simply Typed Lambda Calculus}
+    \caption{Dynamic Rules for the $\lambda$-Calculus}
     \label{fig: dr stlc}
 \end{figure}
 
@@ -227,19 +243,39 @@ transition can be thought of as a change of state from $e_1$ to $e_2$. Clearly, 
 ``val'' rule simply states that terms of the given structure are values and thus cannot 
 transition. Apart from these val rules, we have two distinct transition types: instruction 
 transitions which perform computation and require no premises, and search transitions 
-which allow for subterm computation. Together, these determine the order of evaluation of 
-terms. \\
+which allow for subterm computation. Together these determine the order of evaluation of 
+terms. If we can perform a search transition on some term then we must do so before performing 
+an instruction transition. For each instruction transition, there is an implication that 
+none of the subterms can transition to another state while the whole term is in it's current 
+state. \\
 
 \noindent
-The \ruleref{D-Case-In-l} rule substitutes $e$ for $x$ in $e_1$ if we have $\LamInl{e}$ 
-and \ruleref{D-Case-In-r} performs the same substitution in $e_2$ if we have $\LamInr{e}$. 
+The \ruleref{D-Case-In-l} rule substitutes $e$ for $x$ in $e_1$ if $\LamInl{e}$ is the first subterm, 
+and \ruleref{D-Case-In-r} performs the same substitution in $e_2$ if we have $\LamInr{e}$ instead. 
 The \ruleref{D-Case} rule transitions from a case statement with $e$ to the same case statement 
-but with $e'$ if $e \Step e'$. \ruleref{D-Prj-Pair-l} offers the left projection of a pair, 
-and similarly \ruleref{D-Prj-Pair-r} offers the right projection. \ruleref{D-Prj-l} and 
+but with $e'$ if $e$ can transition to $e'$. \ruleref{D-Prj-Pair-l} offers the left projection of 
+a pair, and similarly \ruleref{D-Prj-Pair-r} offers the right projection. \ruleref{D-Prj-l} and 
 \ruleref{D-Prj-r} transition from the projection of $e$ to the projection of $e'$ if 
-$e \Step e'$. The \ruleref{D-Beta} rule performs a beta reduction on a lambda term and 
-\ruleref{D-App} transitions from the application $e_1 (e_2)$ to $e'_1 (e_2)$ if 
-$e_1 \Step e'_1$.
+$e \Step e'$. The \ruleref{D-Beta} rule performs a beta reduction on a lambda term and replaces $x$ 
+with $e_2$ in $e_1$. Finally, \ruleref{D-App} transitions from the application $e_1 (e_2)$ to 
+$e'_1 (e_2)$ if $e_1 \Step e'_1$. \\
+
+\noindent
+Combining both the dynamics and statics, we can ensure that the $\lambda$-calculus is type safe 
+if the following properties hold: \\
+
+\noindent
+%\textbf{Finality:} If $e$ val then there is no $e'$ where $e \Step e'$. \\\\
+%\textbf{Determinism:} If $e \Step e_1$ and $e \Step e_2$ then $e_1 \equiv e_2$. \\\\
+\textbf{Progress:} If we have some term $e$ where $\vdash \DeclVar{e}{\tau}$ either $e$ is a 
+value, or $e \Step e'$ for some $e'$. \\\\
+\textbf{Preservation:} If we have $\vdash \DeclVar{e}{\tau}$ and $e \Step e'$ we must have 
+$\vdash \DeclVar{e'}{\tau}$. \\
+
+\noindent
+Progress states that computation will continue until evaluation is complete, i.e. until we have a 
+value. Preservation tells us that types are preserved under evaluation. Together they show that 
+well-typed programs don't go wrong. 
 
 %proof of progress and preservation for stlc?
 

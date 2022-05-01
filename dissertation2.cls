@@ -36,7 +36,7 @@
 
 % load base class, then general-purpose packages
 
-\LoadClass[10pt,a4paper,oneside]{book}
+\LoadClass[10pt,a4paper,twoside]{book}
 
 % http://www.ctan.org/tex-archive/macros/latex/required/graphics
 \RequirePackage{graphicx}
@@ -76,7 +76,7 @@
 
 % configure hyperref
 
-\hypersetup{colorlinks=true,bookmarks=false,urlcolor=red}
+\hypersetup{colorlinks=true,urlcolor=red}
 
 % configure algorithm2e
 
@@ -132,23 +132,20 @@
   \newpage
   \thispagestyle{empty}
 
+  \IfEq{\dissertation@type}{}{}{
+    \adjustbox{padding={5pt},frame={1pt},right}{Dissertation Type: {\dissertation@type}}
+  }
 
-%  \IfEq{\dissertation@type}{}{}{
-%    \adjustbox{padding={5pt},frame={1pt},right}{Dissertation Type: {\dissertation@type}}
-%  }
-
-  
+  \vspace*{\fill}
   \begin{center}
                 \includegraphics[scale=0.3]{logo/logo_uob_color}                \\
                               \vspace*{1.0cm}
                           DEPARTMENT OF COMPUTER SCIENCE                        \\
                               \vspace*{2.0cm}
-                              \end{center}
-  {\LARGE \parbox{\textwidth}{\IfEq{\dissertation@title@major}{}{}{\centering \dissertation@title@major \par}}} \par
-                              \vspace*{1cm}\noindent
-    {\Large \parbox{\textwidth}{\IfEq{\dissertation@title@minor}{}{}{\centering \dissertation@title@minor \par}}} \par
-                              \vspace*{1.0cm}\noindent
-                              \begin{center}
+  \mbox{\IfEq{\dissertation@title@major}{}{}{\LARGE \dissertation@title@major}} \\
+                              \vspace*{0.5cm}
+  \mbox{\IfEq{\dissertation@title@minor}{}{}{\Large \dissertation@title@minor}} \\
+                              \vspace*{1.0cm}
                           {\Large \dissertation@author}                         \\
 
                               \vspace*{1.0cm}
@@ -181,19 +178,14 @@
   \thispagestyle{plain}
 
   \chapter*{Declaration}
-  
-I declare that the work in this dissertation was carried out in accordance with the requirements of the University’s Regulations and Code of Practice for Taught Programmes and that it has not been submitted for any other academic award. Except where indicated by specific reference in the text, this work is my own work. Work done in collaboration with, or with the assistance of others, is indicated as such. I have identified all material in this dissertation which is not my own work through appropriate referencing and acknowledgement. Where I have quoted or otherwise incorporated material which is the work of others, I have included the source in the references. Any views expressed in the dissertation, other than referenced material, are those of the author.
 
-  
-% A dissertation submitted to the University of Bristol in accordance with the requirements of the degree of {\dissertation@degree} in the Faculty of Engineering. School of Computer Science, Electrical and Electronic Engineering, and Engineering Maths (SCEEM), {\today}.
+  This dissertation is submitted to the University of Bristol in accordance 
+  with the requirements of the degree of {\dissertation@degree} in the Faculty 
+  of Engineering.  It has not been submitted for any other degree or diploma 
+  of any examining body.  Except where specifically acknowledged, it is all 
+  the work of the Author. 
 
-  %This dissertation is submitted to the University of Bristol in accordance 
-  %with the requirements of the degree of {\dissertation@degree} in the Faculty 
-  %of Engineering.  It has not been submitted for any other degree or diploma 
-%  of any examining body.  Except where specifically acknowledged, it is all 
-%  the work of the Author. 
-
-  \vspace{3cm}
+  \vspace{6cm}
 
   \noindent {\dissertation@author}, \today
 }

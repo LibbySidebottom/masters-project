@@ -1,85 +1,102 @@
 \chapter{Translation}
 
 Here we present a translation from the simply typed lambda calculus into classical linear logic. First 
-we will give the direct translation of each type, then a detailed derivation of how we got there. We 
-make use of the $^{\circ}$ symbol to denote translation of a type. On the left hand side we have the lambda 
-calculus type, and on the right we have its classical linear logic proposition.
-
-\begin{align*}
-    (1)^\circ &= \top^\circ \\
-    (A + B)^\circ &= A^\circ \oplus B^\circ \\
-    (A \times B)^\circ &= A^\circ \otimes B^\circ \\
-    (A \rightarrow B)^\circ &= \negg{(\ofc A^\circ)} \parr B^\circ
-\end{align*} 
+we will give the direct translation of each type, then a detailed derivation of how we got there along 
+with an explanation of what exactly is happening in our translated protocol. We 
+make use of the $^{\circ}$ symbol to denote translation of a type. In some of the translations, we will 
+also use the $^\dagger$ symbol which is simply a renaming of the translation and acts in the same way as 
+$^\circ$. On the left hand side we have the lambda calculus type, and on the right we have its classical 
+linear logic proposition. 
+\begin{figure}[h]
+  \begin{align*}
+      (1)^\circ &= \top\\
+      (A + B)^\circ &= \ofc A^\circ \oplus \ofc B^\circ \\
+      (A \times B)^\circ &= A^\circ \with B^\circ \\
+      (A \rightarrow B)^\circ &= \negg{(\ofc A^\circ)} \parr B^\circ
+  \end{align*} 
+  \caption{Translation of Types}
+  \label{fig: tt}
+\end{figure}
 
 \noindent
-The translations of 1, $(A + B)$, and $(A \times B)$ are as one would expect, however the translation 
+The translations of 1 and $(A \times B)$ are as one would expect. The exponentials in the translation 
+of $(A + B)$ indicate that we may select multiple times from an option we are sent. The translation 
 of $(A \rightarrow B)$ makes use negation since we use some A to acquire some B. The exponential $\ofc A^\circ$ 
 indicates that we can use our function multiple times, rather than just once. If we had just 
 $\negg{A^\circ} \parr B^\circ$ on the CLL side, we would only be able to use the function once as we 
 only have access to one $\negg{A^\circ}$. \\
 
 \noindent
-The translation of some environment $\Gamma$ is as follows:
-
-\begin{align*}
-  \Gamma^\circ & \\
-  (\cdot)^\circ &= \cdot \\
-  (\Gamma, x:A)^\circ &= \Gamma^\circ, x: \negg{(\ofc A^\circ)} \\
-   &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
-\end{align*} 
+The translation of some environment $\Gamma$ is as follows: 
+\begin{figure}[h]
+  \begin{align*}
+    \Gamma^\circ & \\
+    (\cdot)^\circ &= \cdot \\
+    (\Gamma, x:A)^\circ &= \Gamma^\circ, x: \negg{(\ofc A^\circ)} \\
+    &= \Gamma^\circ, x: \whynot \negg{(A^\circ)}
+  \end{align*}
+  \caption{Translation of Contexts}
+  \label{fig: tc} 
+\end{figure}
 
 \noindent
-If we have a protocol $x:A$ from the lambda calculus, translates to $x: \negg{(\ofc A^\circ)}$. The negation 
+If we have a term $x:A$ from the lambda calculus, translates to $x: \negg{(\ofc A^\circ)}$. The negation 
 occurs because contexts in the lambda calculus occur on the left hand side, but we only have right-handed 
-sequents in classical linear logic. More interestingly, we have the exponentiation of A rather than just A. 
+sequents in classical linear logic. More interestingly, we have the exponentiation, $\ofc A^\circ$ rather than just $A^\circ$. 
 This is because in the lambda calculus we may use a protocol as many times as we wish if it occurs in the 
 context, but in classical linear logic we may only use something exactly as many times as it occurs. Hence, 
 we have the exponentiation $(\ofc A^\circ)$ to indicate that we may use $A^\circ$ as many times as we desire. \\
 
 \noindent
 We will need a derivable rule, \ruleref{Depar} which takes a concurrent process $A \parr B$ communicating 
-along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate channels. \\
-
+along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate channels. We achieve this 
+by creating copies of the individual components $x:A$ and $y:B$ along with their duals $w:\negg{A}, z:\negg{B}$, 
+each of which communicate along separate channels and can forward information to their dual. We then output 
+$w$ along $z$ allowing the protocols to continue in parallel. This gives us the dual, $z: \negg{A} \otimes \negg{B}$, 
+to our original process $z:A \parr B$ and we can connect on channel $z$ to give us the disconnected processes $A$ 
+and $B$.
 \begin{mathpar}
-  \inferH{}{
+  \begin{array}{ll}
     \inferH{}{
-      \IsProc{\Link{w}{x}}{\Name{x}: A, \Name{w}: \negg{A}}\\
-      \IsProc{\Link{y}{z}}{\Name{y}: B, \Name{z}: \negg{B}}
+      \inferH{}{
+        \IsProc{\Link{w}{x}}{\Name{x}: A, \Name{w}: \negg{A}}\\
+        \IsProc{\Link{y}{z}}{\Name{y}: B, \Name{z}: \negg{B}}
+      }{
+        \IsProc{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})}}{\Name{x}: A, \Name{y}: B, \Name{z}: \negg{A} \otimes \negg{B}}
+      }\\
+      \inferH{}{
+      }{
+        \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+      }
     }{
-      \IsProc{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})}}{\Name{x}: A, \Name{y}: B, \Name{z}: \negg{A} \otimes \negg{B}}
-    }\\
-    \inferH{}{
-    }{
+      \IsProc{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} P}}{\Gamma, \Name{x}: A, \Name{y}: B}
+    } &\quad \leadsto \\\\
+    &\inferH{Depar}{
       \IsProc{P}{\Gamma, \Name{z}: A \parr B}
+    }{
+      \IsProc{\Depar{x}{y}{P}}{\Gamma, \Name{x}: A, \Name{y}: B}
     }
-  }{
-    \IsProc{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} P}}{\Gamma, \Name{x}: A, \Name{y}: B}
-  }\quad \leadsto \quad
-  \inferH{Depar}{
-    \IsProc{P}{\Gamma, \Name{z}: A \parr B}
-  }{
-    \IsProc{\Depar{x}{y}{P}}{\Gamma, \Name{x}: A, \Name{y}: B}
-  }
+  \end{array}
 \end{mathpar}
 
-\begin{figure}[!]
+\begin{figure}
+  \vspace{-2em}
   \begin{mathpar}
       %var
       {\Biggl\llbracket
       \inferH{T-Var}{
       }{
           \Gamma, x: A \vdash x: A
-      }\Biggr\rrbracket}_\Name{x}
+      }\Biggr\rrbracket}_\Name{y}
       \EqDef
       \inferH{}{
-          \inferH{}{
-          \IsProc{\Link{x}{y}}{\Name{x}: \negg{(A^\circ)}, \Name{y}: A^\circ}
-          }{
-              \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
-          }
+        \inferH{}{
+        \IsProc{\Link{z}{y}}{\Name{z}: \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }{
+          \IsProc{\whynot \Out{x}{z}{\Link{z}{y}}}{\Name{x}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+        }
       }{
-          \IsProc{\whynot \Out{z}{x}{\Link{x}{y}}}{\Gamma^\circ, \Name{z}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
+        \IsProc{\whynot \Out{x}{z}{\Link{z}{y}}}{\Gamma^\circ, \Name{x}: \whynot \negg{(A^\circ)}, \Name{y}: A^\circ}
       }\\
 
       %unit
@@ -91,7 +108,7 @@ along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate
       \EqDef
       \inferH{}{
       }{
-      \IsProc{\EmCase{x}}{\Gamma^{\circ}, \Name{x} : \top^{\circ}}
+      \IsProc{\EmCase{x}}{\Gamma^{\circ}, \Name{x} : \top}
       }\\
 
       %left injection
@@ -103,10 +120,15 @@ along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate
       }\Biggr\rrbracket}_\Name{x}
       \EqDef
       \inferH{}{
-        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ}
+        \inferH{}{
+          \IsProc{\llbracket M \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: A^\circ}
+          }{
+          \IsProc{\ofc \In{x}{y}{\llbracket M \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{x}: \ofc A^\circ}
+        }
       }{
-        \IsProc{\Inl{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
-      }\\
+        \IsProc{\Inl{x}{\ofc \In{x}{y}{\llbracket M \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{x}: \ofc A^\circ \oplus \ofc B^\circ}
+      }
+      \\
 
       %right injection
       {\Biggl\llbracket
@@ -117,10 +139,15 @@ along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate
       }\Biggr\rrbracket}_\Name{x}
       \EqDef
       \inferH{}{
-        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: B^\circ}
+        \inferH{}{
+          \IsProc{\llbracket M \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: B^\circ}
+          }{
+          \IsProc{\ofc \In{x}{y}{\llbracket M \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{x}: \ofc B^\circ}
+        }
       }{
-        \IsProc{\Inr{x}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ}
-      }\\
+        \IsProc{\Inr{x}{\ofc \In{x}{y}{\llbracket M \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{x}: \ofc A^\circ \oplus \ofc B^\circ}
+      }
+      \\
 
       %case
       \Biggl\llbracket
@@ -130,19 +157,19 @@ along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate
         \Gamma, x:B \vdash Q:C
       }{
         \Gamma \vdash \LamCase{M}{x}{P}{x}{Q}:C
-      }\Biggr\rrbracket_\Name{x}
+      }\Biggr\rrbracket_\Name{y}
       \EqDef
       \inferH{}{
-        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
-        \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)}} \\
-        \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(B^\circ)}}
+        \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \ofc A^\circ \oplus \ofc B^\circ} \\
+        \IsProc{\llbracket P \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(\ofc A^\circ)}} \\
+        \IsProc{\llbracket Q \rrbracket_\Name{y}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(\ofc B^\circ)}}
       }{
           \inferH{}{
-          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: A^\circ \oplus B^\circ} \\
-          \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(A^\circ)} \with \negg{(B^\circ)}}
+          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \ofc A^\circ \oplus \ofc B^\circ} \\
+          \IsProc{\Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{y}: C^\circ, \Name{x}: \negg{(\ofc A^\circ)} \with \negg{(\ofc B^\circ)}}
         }{
             \inferH{}{
-            \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
+            \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ, \Name{y}: C^\circ}
           }{
             \IsProc{\New*{x}{}{\llbracket M \rrbracket_\Name{x} \mathbin{|} \Casep{x}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}{\Gamma^\circ, \Name{y}: C^\circ}
       }}}
@@ -230,40 +257,39 @@ along a channel $z$ and disconnects them to give us both $A$ and $B$ on separate
       \EqDef
       \inferH{}{
         \inferH{}{
-          \IsProc{\llbracket M \rrbracket_\Name{x}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)} \parr B^\circ}
+          \IsProc{\llbracket M \rrbracket_\Name{z}}{\Gamma^\circ, \Name{z}: \negg{(\ofc A^\circ)} \parr B^\circ}
         }{
-          \IsProc{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
+          \IsProc{\Depar{x}{y}{\llbracket M \rrbracket_\Name{z}}}{\Gamma^\circ, \Name{x}: \negg{(\ofc A^\circ)}, \Name{y}: B^\circ}
         }\\
         \inferH{}{
-          \IsProc{\llbracket N \rrbracket_\Name{y}}{\Gamma^\dagger, \Name{y^\dagger}: A^\circ}
+          \IsProc{\llbracket N \rrbracket_\Name{u}}{\Gamma^\dagger, \Name{u}: A^\circ}
         }{
-          \IsProc{\ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
+          \IsProc{\ofc \In{x^\dagger}{u}{\llbracket N \rrbracket_\Name{u}}}{\Gamma^\dagger, \Name{x^\dagger}: \ofc A^\circ}
         }
       }{
-        \IsProc{\New*{x}{}{\Depar{x}{y}{\llbracket M \rrbracket_\Name{x}} \mathbin{|} \ofc \In{x}{y}{\llbracket N \rrbracket_\Name{y}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
-      }
+        \inferH{}{
+          \IsProc{\New*{x}{}{\Depar{x}{y}{\llbracket M \rrbracket_\Name{z}} \mathbin{|} \ofc \In{x^\dagger}{u}{\llbracket N \rrbracket_\Name{u}}}}{\Gamma^\circ, \Gamma^\dagger, \Name{y}: B^\circ}
+        }{
+          \IsProc{\New*{x}{}{\Depar{x}{y}{\llbracket M \rrbracket_\Name{z}} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}}{\Gamma^\circ, \Name{y}: B^\circ}
+        }}
   \end{mathpar}
-  \caption{Translation from the simply typed lambda calculus into classical linear logic}
+  \caption{Translation from the $\lambda$-Calculus into Classical Processes}
   \label{fig: translatioin}
 \end{figure}
 
 \noindent
 It is interesting to note that we have an inversion of polarity from the lambda calculus 
 to classical linear logic. All type constructors in the lambda calculus become destructors 
-in CLL and vice verca. %why?? \\
+in CLL and vice verca. \\ %why?? \\
 
 \noindent
-For our translation \ruleref{T-Var} with respect to $x$, we begin with the CLL axiom to  
-give us two channels following dual protocols $A^\circ$ and $\negg{(A^\circ)}$. We then use 
+For our translation \ruleref{T-Var} with respect to $y$, we begin with the CLL axiom to  
+give us two channels following dual protocols $A^\circ$ and $\negg{(A^\circ)}$ which 
+share information with each other via forwarding. We then use 
 dereliction to request $x$, and therefore the protocol $\whynot \negg{(A^\circ)}$ 
 on a new channel $z$. Finally we use weakening to acquire an environment $\Gamma^\circ$ 
 which we do not use. This gives us a typing judgement which is equivalent to the variable 
-judgement in the lambda calculus. Of course as we are in CLL, we can only have processes 
-on the right hand side of the judgement, so 
-\begin{mathpar}
-  \Gamma, x:A \vdash \dots \quad \text{becomes} \quad \vdash \Gamma, x: \negg{A}
-\end{mathpar}
-(ignoring the other effects of translation). So, our final judgement says link 
+judgement in the lambda calculus. So, our final judgement says link 
 $x: \negg{(A^\circ)}$ with $y: A^\circ$, then request $x: \negg{(A^\circ)}$ on a new channel $z$. \\
 
 \noindent
@@ -271,40 +297,367 @@ For \ruleref{T-Unit} we simply use the empty case statement along with the unit 
 So, we create a channel $x$ with no protocols communicating along it. \\
 
 \noindent
-The translation for \ruleref{T-In-l} is fairly straightforward. We select the left choice 
-from two protocols communicating on channel $x$ then execute the process $\llbracket M \rrbracket_x$. 
-This process is simply the translation of $M$ with respect to $x$. The translation of 
-\ruleref{T-In-r} is equivalent, but we select the right choice. \\
+The translation for \ruleref{T-In-l} is fairly straightforward. We begin with a process communicating 
+along channel $y$ following protocol $A^\circ$ and use promotion to input $y$ along channel $x$ to 
+acquire the protocol $\ofc A^\circ$. We then use plus-l indicating we have selected the left choice of 
+two protocols communicating on channel $x$ then execute the process $\llbracket M \rrbracket_x$. 
+The translation of \ruleref{T-In-r} is equivalent, but we select the right choice. \\
 
 \noindent
 For the translation \ruleref{T-Case}, we use the anti-Barendregt convention and conveniently 
-name variables in such a way that we do not have to rename them in the future. As in the 
+name variables in such a way that we do not have to rename them in the future. This is why 
+we have $x: A$ and $x: B$ rather than the expected $y: B$. As in the 
 lambda calculus, we start with three separate processes, each with the same environment. Our 
 first step is to use the with rule to offer a choice between protocols $\negg{(A^\circ)}$ and 
 $\negg{(B^\circ)}$ on channel $x$. Then we use the cut rule to connect the protocols on channel 
-$x$. We then use contraction multiple times to remove copies of $\Gamma^\circ$ and $C^\circ$ 
+$x$. We then use contraction to remove copies of $y: C^\circ$ 
 and allow our process to communicate along one channel. \\
 
 \noindent
-For \ruleref{T-Prod} we simply use the with rule to offer a choice between protocols $A^\circ$ 
-and $B^\circ$. \\
+For \ruleref{T-Prod} we begin with two processes which communicate along the same channel $x$ 
+following different protocols. Then we use the with rule to offer a choice between protocols 
+$A^\circ$ and $B^\circ$ along the same channel $x$. \\
 
 \noindent
 The translation \ruleref{T-Prj-l} begins with the two dual protocols then requests the left 
-option from a choice sent along $y$. We then use the cut rule to connect the dual protocols on 
-channel $y$ and acquire the left projection of the pair $A^\circ \with B^\circ$. The translation 
+option from a choice sent along $y$. We then use the cut rule to connect the dual protocols 
+$\negg{A^\circ} \oplus \negg{B^\circ}$ and $A^\circ \with B^\circ$ on channel $y$ and acquire 
+the left projection $A^\circ$ of the pair $A^\circ \with B^\circ$. The translation 
 of \ruleref{T-Prj-r} is analogous. \\
 
 \noindent
-Our translation \ruleref{T-Lam} with respect to $y$ uses the par rule to input $\negg{(\ofc A^\circ)}$ 
-along channel $y$ then continue as $B$. We use `of course' to indicate that we can apply our function 
-$\llbracket M \rrbracket_y$ to multiple inputs of the form $\negg{(A^\circ)}$. \\
+Our translation \ruleref{T-Lam} with respect to $y$ begins with a process following two protocols 
+which commmunicate along serparate channels. Since we have $\Gamma, x:A \vdash$ on the $\lambda$-
+calculus side, we translate this to $\negg{(\ofc A^\circ)}$. We then use the par rule to input 
+$\negg{(\ofc A^\circ)}$ along channel $y$ then continue as $B^\circ$. The`of course' indicates 
+that we can apply our function $\llbracket M \rrbracket_y$ to multiple inputs of the form 
+$\negg{(A^\circ)}$. \\
 
 \noindent
-more thinking here
-Finally, \ruleref{T-App} uses our derivable rule depar to 
+Finally, \ruleref{T-App} begins with a process following the protocol $\negg{\ofc A^\circ} \parr B^\circ$.
+We use our derivable rule \ruleref{Depar} to disconnect the protocols components and allow them to 
+communicate along separate channels. On the other side we have a process following protocol $A^\circ$ 
+which communicate along channel $u$ with the environment $\Gamma^\dagger$ which is just a copy of 
+the environment $\Gamma^\circ$. We use promotion to input $u$ along channel $x^\dagger$ (a copy of the 
+channel $x$) to acquire the protocol $\ofc A^\circ$. We then connect 
+the dual protocols $\negg{\ofc A^\circ}$ and $\ofc A^\circ$ on channel $x$ which gives us a process 
+which communicate along channel $y$ following protocol $B^\circ$. Finally, we use contraction to merge 
+$\Gamma^\circ$ and its copy $\Gamma^\dagger$ into a single environment. \\
 
-to disconnect a concurrent protocol then 
-use the cut rule to connect the dual protocols and output our desired protocol $B^\circ$.
+
+\section{Proof of Simulation}
+
+Now we have a translation from the $\lambda$-calculus into CLL, we want to ensure it is correct. 
+We will do this using a proof of simulation to show that reduction in the $\lambda$-calculus 
+maps to reduction in our translation. More specifically, if $M \Step M'$ then we must have 
+that $\llbracket M \rrbracket_\Name{x} \Step \llbracket M' \rrbracket_\Name{x}$. \\
+
+\noindent
+We proceed by induction on the dynamics for the $\lambda$-calculus (\ref{fig: dr stlc}) and 
+use cut reduction (\ref{fig: cr cp}) on each the translation until we cannot reduce terms any 
+further. However, before we can begin our proof, just like in the dynamics for the $\lambda$-
+calculus, we need the substitution lemma. \\
+
+\subsection{Substitution}
+
+\textbf{Substitution:} If we have some substitution $M [N/x]$ in the $\lambda$-calculus, then it's 
+translation $\llbracket M [N/x] \rrbracket_\Name{y}$ is equivalent to the following in classical processes:
+$\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{y}}}$. \\
+
+\noindent
+We will now prove that this translation of substituition is correct by doing case analysis 
+on the definition of substituition for the $\lambda$-calculus. 
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % x[N/x]
+    \llbracket x [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket N \rrbracket_\Name{y} \\
+    \llbracket x [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket x \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \whynot \Out{x}{z}{\Link{z}{y}}}} \\
+    &\Longrightarrow_{\beta_{\ofc \whynot}} &\Proc{\New*{z}{}{\llbracket N \rrbracket_\Name{z} \mathbin{|} \Link{z}{y}}} \\
+    &\Longrightarrow_{axCut} &\Proc{\llbracket N \rrbracket_\Name{z}[y/z]} \\
+    &= &\llbracket N \rrbracket_\Name{y} \\\\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % w[N/x]
+    \llbracket w [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket w \rrbracket_\Name{y} \\
+    \llbracket w [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket w \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \whynot \Out{w}{u}{\Link{u}{y}}}} \\
+    &\Longrightarrow_{\beta{\ofc W}} &\Proc{\whynot \Out{w}{u}{\Link{u}{y}}} \\
+    &= &\llbracket w \rrbracket_\Name{y} \\\\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % <>[N/x]
+    \llbracket \UnitV [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \UnitV \rrbracket_\Name{y} \\
+    \llbracket \UnitV [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \UnitV \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \EmCase{y}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\EmCase{y} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \\
+    &\Longrightarrow_{K \top} &\Proc{\EmCase{y}} \\
+    &= &\llbracket \UnitV \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % inl(M)[N/x]
+    \llbracket \LamInl{M}[N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \LamInl{M [N/x]} \rrbracket_\Name{y} \\
+    \llbracket \LamInl{M}[N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \LamInl{M} \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \Inl{y}{\ofc \In{y}{w}{\llbracket M \rrbracket_\Name{w}}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\Inl{y}{\ofc \In{y}{w}{\llbracket M \rrbracket_\Name{w}}} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \\
+    &\Longrightarrow_{K \oplus} &\Proc{\Inl{y}{\New*{x}{}{\ofc \In{y}{w}{\llbracket M \rrbracket_\Name{w}} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}}} \\
+    &\Longrightarrow_{K \ofc} &\Proc{\Inl{y}{\ofc \In{y}{w}{\New*{x}{}{\llbracket M \rrbracket_\Name{w} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}}}} \\
+    &\equiv_{swap} &\Proc{\Inl{y}{\ofc \In{y}{w}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}}}}} \\
+    &= &\Proc{\Inl{y}{\ofc \In{y}{w}{\llbracket M [N/x] \rrbracket_\Name{w}}}} \\
+    &= &\llbracket \LamInl{M [N/x]} \rrbracket_\Name{y} \\\\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % case
+    \llbracket \LamCase{M}{w}{P}{w}{Q} [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \LamCase{M [N/x]}{w}{P [N/x]}{w}{Q [N/x]} \rrbracket_\Name{y} \\
+    \llbracket \LamCase{M}{w}{P}{w}{Q} [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \LamCase{M}{w}{P}{w}{Q} \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{w}{}{\llbracket M \rrbracket_\Name{w} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &= &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}[u/x][x/u]} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &\Longrightarrow_{\beta_{\ofc C}} &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{u}{}{\ofc \In{u}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}[u/x]}} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &= &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket (M[u/x])[N/u] \rrbracket_\Name{w}} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &= &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{w}{}{\llbracket M[N/x] \rrbracket_\Name{w} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{w}{}{\Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}}} \\
+    &\equiv_{swap} &\Proc{\New*{w}{}{\New*{x}{}{\Casep{w}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}}} \\
+    &\Longrightarrow_{K \with} &\Proc{\New*{w}{}{\Casep{w}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket P \rrbracket_\Name{y}}}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket Q \rrbracket_\Name{y}}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}}} \\
+    &\equiv_{swap} &\Proc{\New*{w}{}{\Casep{w}{\New*{x}{}{\llbracket P \rrbracket_\Name{y} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}}{\New*{x}{}{\llbracket Q \rrbracket_\Name{y} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \mathbin{|} \llbracket M[N/x] \rrbracket_\Name{w}}} \\
+    &= &\Proc{\New*{w}{}{\Casep{w}{\llbracket P [N/x] \rrbracket_\Name{y}}{\llbracket Q [N/x] \rrbracket_\Name{y}} \mathbin{|} \llbracket M [N/x] \rrbracket_\Name{w}}} \\
+    &\equiv_{swap} &\Proc{\New*{w}{}{\llbracket M [N/x] \rrbracket_\Name{w} \mathbin{|} \Casep{w}{\llbracket P [N/x] \rrbracket_\Name{y}}{\llbracket Q [N/x] \rrbracket_\Name{y}}}} \\
+    &= &\llbracket \LamCase{M [N/x]}{w}{P [N/x]}{w}{Q [N/x]} \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % <P, Q>[N/x]
+    \llbracket \Tuple{P}{Q} [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \Tuple{P [N/x]}{Q [N/x]} \rrbracket_\Name{y} \\
+    \llbracket \Tuple{P}{Q} [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \Tuple{P}{Q} \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \Casep{y}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\Casep{y}{\llbracket P \rrbracket_\Name{y}}{\llbracket Q \rrbracket_\Name{y}} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \\
+    &\Longrightarrow_{K \with} & \Proc{\Casep{y}{\New*{x}{}{\llbracket P \rrbracket_\Name y \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}}{\llbracket Q \rrbracket_\Name{y} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \\
+    &\equiv_{swap} &\Proc{\Casep{y}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket P \rrbracket_\Name{y}}}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket Q \rrbracket_\Name{y}}}} \\
+    &= &\Proc{\Casep{y}{\llbracket P [N/x] \rrbracket_\Name{y}}{\llbracket Q [N/x] \rrbracket_\Name{y}}} \\
+    &= &\llbracket \Tuple{P [N/x]}{Q [N/x]} \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % pi(M)[N/x]
+    \llbracket \Proj{M}[N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \Proj{M [N/x]} \rrbracket_\Name{y} \\
+    \llbracket \Proj{M}[N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \Proj{M} \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{w}{}{\Inl{w}{\Link{w}{y}} \mathbin{|} \llbracket M \rrbracket_\Name{w}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{w}{}{\llbracket M \rrbracket_\Name{w} \mathbin{|} \Inl{w}{\Link{w}{y}}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{w}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}} \mathbin{|} \Inl{w}{\Link{w}{y}}}} \\
+    &\equiv_{swap} &\Proc{\New*{w}{}{\Inl{w}{\Link{w}{y}} \mathbin{|} \New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{w}}}} \\
+    &= &\Proc{\New*{w}{}{\Inl{w}{\Link{w}{y}} \mathbin{|} \llbracket M [N/x] \rrbracket_\Name{w}}} \\
+    &= &\llbracket \Proj{M [N/x]} \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rll}
+    % \w.M[N/x]
+    \llbracket (\Lam{w}{M})[N/x] \rrbracket_\Name{y} &\EqDef &\llbracket \Lam{w}{M[N/x]} \rrbracket_\Name{y} \\
+    \llbracket (\Lam{w}{M})[N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket \Lam{w}{M} \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \In{y}{w}{\llbracket M \rrbracket_\Name{y}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\In{y}{w}{\llbracket M \rrbracket_\Name{y}} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}} \\
+    &\Longrightarrow_{K \with} &\Proc{\In{y}{w}{\New*{x}{}{\llbracket M \rrbracket_\Name{y} \mathbin{|} \ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}}}}} \\
+    &\equiv_{swap} &\Proc{\In{y}{w}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket M \rrbracket_\Name{y}}}} \\
+    &= &\Proc{\In{y}{w}{\llbracket M [N/x] \rrbracket_\Name{y}}} \\
+    &= &\llbracket \Lam{w}{M[N/x]} \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \hspace{-3em}
+  \begin{array}{rll}
+    % P(Q)[N/x]
+    \llbracket (P(Q)) [N/x] \rrbracket_\Name{y} &\EqDef &\llbracket (P [N/x](Q [N/x])) \rrbracket_\Name{y} \\
+    \llbracket (P(Q)) [N/x] \rrbracket_\Name{y} &\EqDef &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket P(Q) \rrbracket_\Name{y}}} \\
+    &= &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\alpha}{}{\New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}} \\
+    &= &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}}[\tau /x][x/ \tau]} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}} \\
+    &\Longrightarrow_{\beta_{\ofc C}} &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\tau}{}{\ofc \In{\tau}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}}[\tau /x]}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}} \\
+    &= &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\tau}{}{\ofc \In{\tau}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})[\tau /x]} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}[\tau /x]}}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}} \\
+    &\equiv_{swap} &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\tau}{}{\ofc \In{\tau}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\llbracket P \rrbracket_\Name{\sigma}[\tau /x] \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}}}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\New*{\tau}{}{\ofc \In{\tau}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket P \rrbracket_\Name{\sigma}[\tau /x]} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}}} \\
+    &= &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\llbracket (P [\tau /x])[N/ \tau] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}}} \\
+    &= &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\alpha}{}{\New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}}}} \\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \New*{\alpha}{}{\ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}} \mathbin{|} \New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}}}}} \\
+    &\equiv_{assoc} &\Proc{\New*{\alpha}{}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q \rrbracket_\Name{u}}} \mathbin{|} \New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}}}} \\
+    &\Longrightarrow_{K \ofc} &\Proc{\New*{\alpha}{}{\ofc \In{\alpha}{u}{\New*{x}{}{\ofc \In{x}{z}{\llbracket N \rrbracket_\Name{z}} \mathbin{|} \llbracket Q \rrbracket_\Name{u}}} \mathbin{|} \New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}}}} \\
+    &= &\Proc{\New*{\alpha}{}{\ofc \In{\alpha}{u}{\llbracket Q [N/x] \rrbracket_\Name{u}} \mathbin{|} \New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}}}} \\
+    &\equiv_{swap} &\Proc{\New*{\alpha}{}{\New*{\sigma}{}{\llbracket P [N/x] \rrbracket_\Name{\sigma} \mathbin{|} \Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q [N/x] \rrbracket_\Name{u}}}} \\
+    &\equiv_{swap} &\Proc{\New*{\alpha}{}{\New*{\sigma}{}{\Out{\sigma}{w}{(\Link{w}{\alpha} \mathbin{|} \Link{y}{\sigma})} \mathbin{|} \llbracket P [N/x] \rrbracket_\Name{\sigma}} \mathbin{|} \ofc \In{\alpha}{u}{\llbracket Q [N/x] \rrbracket_\Name{u}}}} \\
+    &= &\llbracket (P [N/x](Q [N/x])) \rrbracket_\Name{y} \\
+  \end{array}
+\end{mathpar}
+
+\subsection{Reduction Simulation}
+
+Now we have proved that we have a valid substitution lemma, we can begin our proof of 
+simulation to show that our translation is indeed correct.
+
+\begin{mathpar}
+  \begin{array}{rll}
+    %case
+    \Biggl\llbracket
+    \inferH{S-Case-In-l}{
+    }{
+      \LamCase{\LamInl{M}}{y}{P}{y}{Q} \Step P[M/y]
+    }\Biggr\rrbracket_\Name{x}
+    &\EqDef
+    &\inferH{}{
+    }{
+      \llbracket \LamCase{\LamInl{M}}{y}{P}{y}{Q} \rrbracket_\Name{x} \Step \llbracket P[M/y] \rrbracket_\Name{x}
+    } \\\\
+    \llbracket \LamCase{\LamInl{M}}{y}{P}{y}{Q} \rrbracket_\Name{x}
+    &\EqDef
+    &\Proc{\New*{y}{}{\llbracket \LamInl{M} \rrbracket_\Name{y} \mathbin{|} \Casep{y}{\llbracket P \rrbracket_\Name{x}}{\llbracket Q \rrbracket_\Name{x}}}} \\\\
+    &= &\Proc{\New*{y}{}{\Inl{y}{\ofc \In{y}{z}{\llbracket M \rrbracket_\Name{z}} \mathbin{|} \Casep{y}{\llbracket P \rrbracket_\Name{x}}{\llbracket Q \rrbracket_\Name{x}}}}} \\\\
+    &\Longrightarrow_{\beta_{\oplus \with}} &\Proc{\New*{y}{}{\ofc \In{y}{z}{\llbracket M \rrbracket_\Name{z}} \mathbin{|} \llbracket P \rrbracket_\Name{x}}} \\\\      
+    &= &\llbracket P[M/y] \rrbracket_\Name{x} \\\\
+  \end{array}
+\end{mathpar}
+
+\noindent
+For \ruleref{S-Case-In-l} we simply extract the translation of the case term then use the 
+$\beta_{\oplus \with}$ cut reduction rule to handle the 
+$\Proc{\New*{y}{}{\Inl{y}{} \mathbin{|} \Casep{y}{}{}}}$ and achieve the translation of 
+the result. The proof for case-in-r is analogous. \\
+
+\begin{mathpar}
+  \begin{array}{rll}
+    \Biggl\llbracket
+    \inferH{S-Case}{
+      M \Step M'
+    }{
+      \LamCase{M}{y}{P}{y}{Q} \Step \LamCase{M'}{y}{P}{y}{Q}
+    }\Biggr\rrbracket_\Name{x}
+    &\EqDef 
+    &\inferH{}{
+      \llbracket M \rrbracket_\Name{y} \Step \llbracket M' \rrbracket_\Name{y}
+    }{
+      \llbracket \LamCase{M}{y}{P}{y}{Q} \rrbracket_\Name{x} \Step \llbracket \LamCase{M'}{y}{P}{y}{Q} \rrbracket_\Name{x}
+    } \\\\
+    \llbracket \LamCase{M}{y}{P}{y}{Q} \rrbracket_\Name{x} 
+    &\EqDef 
+    &\Proc{\New*{y}{}{\llbracket M \rrbracket_\Name{y} \mathbin{|} \Casep{y}{\llbracket P \rrbracket_\Name{x}}{\llbracket Q \rrbracket_\Name{x}}}} \\\\
+    &\Longrightarrow_{SCase} &\Proc{\New*{y}{}{\llbracket M' \rrbracket_\Name{y} \mathbin{|} \Casep{y}{\llbracket P \rrbracket_\Name{x}}{\llbracket Q \rrbracket_\Name{x}}}} \\\\
+    &= &\llbracket \LamCase{M'}{y}{P}{y}{Q} \rrbracket_\Name{x} \\\\
+  \end{array}
+\end{mathpar}
+
+\noindent
+We know that $\llbracket M \rrbracket_\Name{y} \Step \llbracket M' \rrbracket_\Name{y}$ 
+by our induction hypothesis, so applying the \ruleref{S-Case} rule we obtain the required result. \\
+
+\begin{mathpar}
+  \begin{array}{rll}
+    %proj
+    \Biggl\llbracket
+    \inferH{S-Prj-Pair-l}{
+    }{
+      \Proj{\Tuple{M}{N}} \Step M
+    }\Biggr\rrbracket_\Name{x}
+    &\EqDef
+    &\inferH{}{
+    }{
+      \llbracket \Proj{\Tuple{M}{N}} \rrbracket_\Name{x} \Step \llbracket M \rrbracket_\Name{x}
+    } \\\\
+    \llbracket \Proj{\Tuple{M}{N}} \rrbracket_\Name{x} 
+    &\EqDef
+    &\Proc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} \llbracket \Tuple{M}{N} \rrbracket_\Name{y}}} \\\\
+    &= &\Proc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} \Casep{y}{\llbracket M \rrbracket_\Name{y}}{\llbracket N \rrbracket_\Name{y}}}} \\\\
+    &\Longrightarrow_{\beta_{\oplus \with}} &\Proc{\New*{y}{}{\Link{y}{x} \mathbin{|} \llbracket M \rrbracket_\Name{y}}} \\\\
+    &\Longrightarrow_{axCut} &\Proc{\llbracket M \rrbracket_\Name{y}[\Name{x} / \Name{y}]} \\\\
+    &= &\llbracket M \rrbracket_\Name{x} \\\\
+  \end{array}
+\end{mathpar}
+
+\noindent
+For \ruleref{S-Prj-Pair-l} we find the translation of the term then use the $\beta_{\oplus \with}$ 
+cut reduction rule again to handle the $\Proc{\New*{y}{}{\Inl{y}{} \mathbin{|} \Casep{y}{}{}}}$, 
+then we use the \ruleref{AxCut} rule to substitute $\Name{x}$ for $\Name{y}$ in $\llbracket M \rrbracket_\Name{y}$. 
+This results in the translation of $M$ with respect to $\Name{x}$ which is what we needed. Again, the 
+proof for prj-pair-r will be much the same. \\
+
+\begin{mathpar}
+  \begin{array}{rll}
+    \Biggl\llbracket
+    \inferH{S-Prj-l}{
+      M \Step M'
+    }{
+      \Proj{M} \Step \Proj{M'}
+    }\Biggr\rrbracket_\Name{x}
+    &\EqDef
+    &\inferH{}{
+      \llbracket M \rrbracket_\Name{y} \Step \llbracket M' \rrbracket_\Name{y}
+    }{
+      \llbracket \Proj{M} \rrbracket_\Name{x} \Step \llbracket \Proj{M'} \rrbracket_\Name{x}
+    } \\\\
+    \llbracket \Proj{M} \rrbracket_\Name{x}
+    &\EqDef 
+    &\Proc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} {\llbracket M \rrbracket}_\Name{y}}} \\\\
+    &\Longrightarrow_{SPrjL} &\Proc{\New*{y}{}{\Inl{y}{\Link{y}{x}} \mathbin{|} {\llbracket M' \rrbracket}_\Name{y}}} \\\\
+    &= &\llbracket \Proj{M'} \rrbracket_\Name{x} \\\\
+  \end{array}
+\end{mathpar}
+
+\noindent
+We know by our induction hypothesis that $\llbracket M \rrbracket_\Name{y} \Step \llbracket M' \rrbracket_\Name{y}$, 
+so applying the \ruleref{S-Prj-l} rule, we achieve the necessary result. The proof for S-Prj-r is analogous. \\
+
+\begin{mathpar}
+  \begin{array}{rll}
+    %beta
+    \Biggl\llbracket
+    \inferH{S-Beta}{
+    }{
+      (\Lam{x}{M})(N) \Step M[N/x]
+    }\Biggr\rrbracket_\Name{y}
+    &\EqDef
+    &\inferH{}{
+    }{
+      \llbracket (\Lam{x}{M})(N) \rrbracket_\Name{y} \Step \llbracket M[N/x] \rrbracket_\Name{y}
+    } \\\\
+    \llbracket (\Lam{x}{M})(N) \rrbracket_\Name{y} 
+    &\EqDef
+    &\Proc{\New*{x}{}{\Depar{x}{y}{\llbracket \lambda x.M \rrbracket_\Name{z}} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &= &\Proc{\New*{x}{}{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} (\In{z}{x}{\llbracket M \rrbracket_\Name{z}})} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &= &\Proc{\New*{x}{}{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} (\In{z}{x}{\llbracket M \rrbracket_\Name{z}})[w/x]} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &= &\Proc{\New*{x}{}{\New*{z}{}{\Out{z}{w}{(\Link{w}{x} \mathbin{|} \Link{y}{z})} \mathbin{|} (\In{z}{w}{\llbracket M \rrbracket_\Name{z}[w/x]})} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &\Longrightarrow_{\beta_{\otimes \parr}} &\Proc{\New*{x}{}{\New*{w}{}{\Link{w}{x} \mathbin{|} \New*{z}{}{\Link{y}{z} \mathbin{|} \llbracket M \rrbracket_\Name{z}}} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &\Longrightarrow_{axCut} &\Proc{\New*{x}{}{\New*{w}{}{\Link{w}{x} \mathbin{|} \llbracket M \rrbracket_\Name{y}} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &\Longrightarrow_{axCut} &\Proc{\New*{x}{}{\llbracket M \rrbracket_\Name{y} \mathbin{|} \ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}}}} \\\\
+    &\equiv_{swap} &\Proc{\New*{x}{}{\ofc \In{x}{u}{\llbracket N \rrbracket_\Name{u}} \mathbin{|} \llbracket M \rrbracket_\Name{y}}} \\\\
+    &= &\llbracket M[N/x] \rrbracket_\Name{y} \\\\
+  \end{array}
+\end{mathpar}
+
+\noindent
+For \ruleref{S-Beta} we begin as usual by extracting the translation of the term. Then we substitute 
+$w$ for $x$ in $\Proc{\In{z}{w}{\llbracket M \rrbracket_\Name{z}}}$ so we can use the $\beta_{\otimes \parr}$ 
+cut reduction rule to handle $\Proc{\New*{z}{}{\Out{z}{w}{} \mathbin{|} \In{z}{w}{}}}$. Then we use the axCut 
+rule to substitute $y$ for $z$ in $\llbracket M \rrbracket_\Name{z}$ resulting in $\llbracket M \rrbracket_\Name{y}$. 
+We then use axCut again to substitue $x$ for $w$ in $\llbracket M \rrbracket_\Name{y}$ which changes nothing. 
+Finally we use the swap equivalence to switch the positions of the subterms in $\Proc{\New*{x}{}{\dots}}$ to achieve 
+the translation of the result as required. \\
 
 % -----------------------------------------------------------------------------
