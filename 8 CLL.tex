@@ -1,11 +1,11 @@
-\chapter{Classical Linear Logic}
-\label{chap:execution}
+\chapter{Classical Linear Logic and Classical Processes}
+\label{chap: cll}
 
 Classical linear logic was introduced by Girard as the logic behind logic. It has a classical framework 
 whilst also being constructive and was the first attempt at solving concurrency at a logical level. Here, 
 we will build on the issue of concurrency by interpreting propositions as session types and extending 
-CLL to CP, a session-typed process calculus introduced by Wadler. We will first explore CLL in it's 
-usual form then combine it with session types to produce a prototypical concurrent language. \\
+CLL to CP, a session-typed process calculus introduced by Wadler. We will first explore CLL alone, 
+then combine it with session types to produce a prototypical concurrent language. \\
 
 \noindent
 In classical linear logic variables are denoted by capital letters $A, B, ...$ and the duals to these 
@@ -23,6 +23,27 @@ would occur on the left-hand side of a classical sequent becomes a negation on t
 a CLL sequent. We also have that any proposition must be used exactly as many times as it appears. We 
 cannot have some proposition $A$ and not make use of it, and similarly we cannot use it any more than 
 once if it only appears once. \\
+
+\section{The Vending Machine}
+\noindent
+Generally when researching the basics of classical linear logic, one may find the vending machine example which is 
+widely used to describe the propositions of CLL in a way that is easy to understand. Say we have a vending machine 
+which takes \pounds 1 coins and has the options of Tea or Coffee. If we see the tensor symbol on the machine: \emph{Tea} 
+$\otimes$ \emph{Coffee}, then inserting \pounds 1 will give us both Tea and Coffee. However if we see \emph{Tea} $\with$ 
+\emph{Coffee} then inserting \pounds 1 will give us a choice of either Tea or Coffee. If we can't decide what drink to 
+have, then finding a vending machine which says \emph{Tea} $\oplus$ \emph{Coffee} will take our \pounds 1 and give us either 
+Tea or Coffee making the decision for us. Par is not quite so easy to describe, if we stay with our vending machines then 
+we would most likely see $\pounds 1 \ \parr$ \emph{Tea} which would imply that inserting \pounds 1 into the vending machine 
+will then give us Tea. Having a term $A \parr B$ in classical linear logic is equivalent to having either $\negg{A} \multimap B$ 
+or $\negg{B} \multimap A$ in linear logic. Essentially, we can have either \pounds 1 or Tea, but having one means we 
+have given up the other.  \\
+
+\noindent
+Moving on to the exponential fragment, if we have a term $\ofc \pounds 1$ this would indicate that we have an unspecified 
+number of \pounds 1 coins which we may use at the vending machine. We may also see a term $\whynot \pounds 1$ on any of 
+these vending machines which would indicate that it is possible to use the machine any number of times by inserting multiple 
+\pounds 1 coins, or none at all. Both of course ($\ofc$) and why not ($\whynot$) mean that whatever follows it can be used any 
+number of times, or even never used at all. \\
 
 \section{Statics}
 
@@ -45,26 +66,6 @@ once if it only appears once. \\
   \label{fig: p cll}
 \end{figure}
 
-\noindent
-Generally when researching the basics of classical linear logic, one may find the vending machine example which is 
-widely used to describe the propositions of CLL in a way that is easy to understand. Say we have a vending machine 
-which takes \pounds 1 coins and has the options of Tea or Coffee. If we see the tensor symbol on the machine: \emph{Tea} 
-$\otimes$ \emph{Coffee}, then inserting \pounds 1 will give us both Tea and Coffee. However if we see \emph{Tea} $\with$ 
-\emph{Coffee} then inserting \pounds 1 will give us a choice of either Tea or Coffee. If we can't decide what drink to 
-have, then finding a vending machine which says \emph{Tea} $\oplus$ \emph{Coffee} will take our \pounds 1 and give us either 
-Tea or Coffee making the decision for us. Par is not quite so easy to describe, if we stay with our vending machines then 
-we would most likely see $\pounds 1 \ \parr$ \emph{Tea} which would imply that inserting \pounds 1 into the vending machine 
-will then give us Tea. Having a term $A \parr B$ in classical linear logic is equivalent to having either $\negg{A} \multimap B$ 
-or $\negg{B} \multimap A$ in linear logic. Essentially, we can have either \pounds 1 or Tea, but having one means we 
-have given up the other.  \\
-
-\noindent
-Moving on to the exponential fragment, if we have a term $\ofc \pounds 1$ this would indicate that we have an unspecified 
-number of \pounds 1 coins which we may use at the vending machine. We may also see a term $\whynot \pounds 1$ on any of 
-these vending machines which would indicate that it is possible to use the machine any number of times by inserting multiple 
-\pounds 1 coins, or none at all. Both of course ($\ofc$) and why not ($\whynot$) mean that whatever follows it can be used any 
-number of times, or even never used at all. \\
-
 \begin{figure}
   \begin{align*}
     \negg{(A \otimes B)} &= \negg{A} \parr \negg{B} & \negg{(A \parr B)} &= \negg{A} \otimes \negg{B} \\
@@ -78,7 +79,10 @@ number of times, or even never used at all. \\
 \end{figure}
 
 \noindent
-For this report, we will modify these definitions slightly so they fit with our process calculus. \\
+Now we have an intuition for how propositions work for CLL, we can adapt them to fit the new context with session types. 
+Session types help us dictate exactly how we want processes to communicate with each other. They can describe patterns 
+of communication, for example; first one process will send and the other will receive, then the second process will send and 
+the first will receive. This allows us to create communicating processes which do not suffer from deadlock or endless waiting. \\
 
 \noindent
 Tensor, $A \otimes B$ represents multiplicative conjunction and means output A, then continue as B. The dual to tensor 
@@ -112,7 +116,7 @@ copies of A, and why not, $\whynot A$ means we have a client who may request man
 
 \noindent
 Classical linear logic naturally lends itself to parallelism, so we present the rules of CLL 
-alongside a process calculus similar to $\pi$ calculus. 
+alongside a process calculus similar to $\pi$ calculus. We use round brackets, to show input, and square brackets to show output.
 A process $\Proc{P}$ can take on a few forms. Link says that we can connect two channels in 
 such a way that any message delivered to $\Name{y}$ will be forwarded over $\Name{x}$ and vice verca.
 For an output such as $\Proc{\Out{y}{x}{(P \mathbin{|} Q)}}$ we would output $\Name{x}$ on channel 
@@ -126,8 +130,6 @@ continue as $\Proc{P}$ where $\Name{x}$ is bound in $\Proc{P}$. Similarly, for $
 we ouput $\Name{x}$ on channel $\Name{\whynot y}$ then continue as $\Proc{P}$ where $\Name{x}$ is 
 bound in $\Proc{P}$. \\
 
-% \section{Rules for CLL}
-
 \noindent
 We can now combine our process calculus with our propositions for CLL and present the rules for 
 classical linear logic alongside their corresponding processes. Our typing judgements have the form 
@@ -137,7 +139,7 @@ $\Proc{P}$ communicating along channel $\Name{x}$ obeying protocol $A$. Processe
 multiple channels following different protocols, and as we saw in \ref{fig: p cp} the processes 
 may also take on varying forms. \\
 
-\begin{figure}[!]
+\begin{figure}
   \begin{mathpar}
     \inferH{Axiom}{
     }{
@@ -408,7 +410,14 @@ also serves as a proof of preservation for CP.
     }{
       \IsProc{\New*{x}{}{P \mathbin{|} Q}}{\Gamma, \Delta}
     }\\\\
+  \end{mathpar}
+  \caption{Cut Reduction Rules for Classical Processes I}
+  \label{fig: cr cp 1}
+\end{figure}
 
+\begin{figure}[h]
+  \begin{mathpar}
+  
     \inferH{}{
       \inferH{}{
         \IsProc{P}{\whynot \Gamma, \Name{x}: A}
@@ -449,15 +458,6 @@ also serves as a proof of preservation for CP.
     }{
       \IsProc{Q}{\whynot \Gamma, \Delta}
     }\\\\
-  \end{mathpar}
-  \caption{Cut Reduction Rules for Classical Processes I}
-  \label{fig: cr cp 1}
-\end{figure}
-
-\noindent
-
-\begin{figure}[h]
-  \begin{mathpar}
     \inferH{}{
       \inferH{}{
         \IsProc{P}{\whynot \Gamma, \Name{x}: A}
@@ -519,7 +519,7 @@ also serves as a proof of preservation for CP.
 \noindent
 \ruleref{AxCut} is a structural cut reduction and shows that we can perform a substitution when we have a link 
 cut with a process sharing one channel with the link. The general rule is that if we have an input such as 
-$\In{x}{y}{P}$ or $\Inr{x}{P}$ on one side of a cut, and an output such as $\Out{x}{y}{Q}$ or $\Casep{x}{Q}{R}$ 
+$\In{x}{y}{P}$ or $\Casep{x}{Q}{R}$ on one side of a cut, and an output such as $\Out{x}{y}{Q}$ or $\Inr{x}{P}$ 
 on the other, then cutting them together allows us to connect the subprocesses directly together. So, 
 $\New*{x}{}{\In{x}{y}{P} \mathbin{|} \Out{x}{y}{Q}} \Longrightarrow \New*{x}{}{P \mathbin{|} Q}$ and 
 $\New*{x}{}{\Inr{x}{P} \mathbin{|} \Casep{x}{Q}{R}} \Longrightarrow \New*{x}{}{P \mathbin{|} R}$.
@@ -527,7 +527,7 @@ $\New*{x}{}{\Inr{x}{P} \mathbin{|} \Casep{x}{Q}{R}} \Longrightarrow \New*{x}{}{P
 \subsection{Cut Elimination}
 
 Cut elimination, also called commuting conversions, illustrate how we can push cuts into communication protocols. 
-So, if we have a cut on $\New*{x}{}{P \mathbin{|} Q}$ and the process $\Proc{P} = \In{y}{z}{R}$ is communicating 
+So, if we have a cut $\New*{x}{}{P \mathbin{|} Q}$ and the process $\Proc{P} = \In{y}{z}{R}$ is communicating 
 on a different channel, $\Name{y}$, then we can push the cut into the communicating process to get a new process 
 $\In{y}{z}{\New*{x}{}{R \mathbin{|} Q}}$ . 
 
@@ -579,16 +579,10 @@ $\In{y}{z}{\New*{x}{}{R \mathbin{|} Q}}$ .
       }
     }{
       \IsProc{\Out{x}{y}{(P \mathbin{|} \New*{z}{}{Q \mathbin{|} R})}}{\Gamma, \Delta, \Theta, \Name{x}: A \otimes B}
-    }
-  \end{mathpar}
-  \caption{Cut Elimination for Classical Processes I}
-  \label{fig: ce cp 1}
-\end{figure}
+    }\\\\
 
-\begin{figure}[h]
-  \begin{mathpar}
-     %kpar
-     \inferH{}{
+    %kpar
+    \inferH{}{
       \inferH{}{
         \IsProc{P}{\Gamma, \Name{y}: A, \Name{x}: B, \Name{z}: C}
       }{
@@ -608,6 +602,7 @@ $\In{y}{z}{\New*{x}{}{R \mathbin{|} Q}}$ .
     }{
       \IsProc{\In{x}{y}{\New*{z}{}{P \mathbin{|} Q}}}{\Gamma, \Delta, \Name{x}: A \parr B}
     }\\\\
+
     %k&
     \inferH{}{
       \inferH{}{
@@ -658,6 +653,13 @@ $\In{y}{z}{\New*{x}{}{R \mathbin{|} Q}}$ .
     }{
       \IsProc{\Inl{x}{\New*{z}{}{P \mathbin{|} Q}}}{\Gamma, \Delta, \Name{x}: A \oplus B}
     }
+  \end{mathpar}
+  \caption{Cut Elimination for Classical Processes I}
+  \label{fig: ce cp 1}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{mathpar}
     %k!
     \inferH{}{
       \inferH{}{
@@ -740,7 +742,7 @@ $\In{y}{z}{\New*{x}{}{R \mathbin{|} Q}}$ .
     }
   \end{mathpar}
   \caption{Cut Elimination for Classical Processes II}
-  \label{fig: ce cp 12}
+  \label{fig: ce cp 2}
 \end{figure}
 
 % -----------------------------------------------------------------------------

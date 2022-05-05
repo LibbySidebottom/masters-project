@@ -6,16 +6,6 @@
 % Lambda Calculus to CLL.
 
 \noindent
-There is no lack of literature on classical linear logic (CLL), however almost all of it assumes a reasonable 
-level of prior knowledge on the subject. This would not be a problem if someone had written down all the 
-rules and explained the purpose of CLL. Unfortunately, no one thought to do such a thing and so the rules 
-are taught to students by supervisors in a one-on-one setting. The first aim of this report is to present 
-the rules of classical linear logic such that someone who has no prior knowledge can come away knowing 
-enough to approach more literature on the topic without feeling out of depth. We will then provide a 
-translation from the simply typed lambda calculus into classical linear logic which has been considered 
-by many prominent figures, but never been written out in full. \\
-
-\noindent
 There are two forms of logic: classical logic, and constructive logic (also called intuitionistic logic). 
 Classical logic is the foundation for classical mathematics and has a few defining features including 
 logical operations, structural rules, and double negation. Logical operations connect two or more statements 
@@ -36,7 +26,7 @@ proof of a proposition in classical logic can be translated into a proof of a we
 equivalent) proposition in constructive logic. \\
 
 \noindent
-Our main topic is classical linear logic which was first presented by Girard as an extension of constructive logic 
+Our main topic is classical linear logic (CLL) which was first presented by Girard \cite{girard1987} as an extension of constructive logic 
 with a classical framework. CLL is a substructural logic which makes use of double negation from classical logic, and 
 constructivism from intuitionistic logic. The addition of exponentials allows us to use structural rules to some extent. 
 It has a number of applications in computer science, namely in reasoning about resources, resource useage, ownership, 
@@ -58,12 +48,30 @@ us to model classical linear logic as a parallel programming language. For this 
 \cite{wadler2014} variant on the $\pi$-calculus which he combines with CLL to create a session-typed process calculus 
 named classical processes (CP). Wadler's variant extends the $\pi$-calculus so it has processes corresponding to 
 each of the typing judgements needed for CLL. For each logical proposition we have a session type which 
-describes a type for the communicating protocols. Session types  allow us to describe how two processes 
+describes a type for the communicating protocols. Session types allow us to describe how two processes 
 communicate along a channel. They are most often used in relation to the $\pi$-calculus which was introduced 
 by Milner \cite{milner1992} as a way to model processes which communicate concurrently. \\
 
 \noindent
-When Girard first introduced classical linear logic \cite{girard1987}, he suggested that the multiplicative fragment 
-on CLL has obvious links to parallel computation. 
+There is no lack of literature on classical linear logic, however almost all of it assumes a reasonable 
+level of prior knowledge on the subject. This would not be a problem if someone had written down all the 
+rules and explained the purpose of CLL. Unfortunately, no one thought to do such a thing and so the rules 
+are taught to students by supervisors in a one-on-one setting. The first aim of this thesis is to present 
+the rules of classical linear logic such that someone who has no prior knowledge can come away knowing 
+enough to approach more literature on the topic without feeling out of depth. We will then provide a 
+translation from the simply typed lambda calculus into classical linear logic which has been considered 
+by many prominent figures, but never been written out in full. \\
+
+\section{Outline}
+
+\noindent
+We begin with chapter \ref{chap: stlc} where we discuss the simply typed lambda calculus chapter, detailing the statics and 
+dynamics so we have a good foundation for our translation. We then introduce classical linear logic in chapter \ref{chap: cll}, 
+explaining the original meanings of the propositions, and providing an intuition for how they combine with session 
+types to create classical processes. We follow a similar trajectory to the previous chapter, outlining both the 
+statics and dynamics for CP so it is easy for the reader to make a direct comparison between the two calculi.
+In chapter \ref{chap: translation} we give a call-by-name translation from the $\lambda$-calculus into CP and 
+prove substitution for the translation. We also provide a proof of simulation to show that our translation is 
+correct. 
 
 % -----------------------------------------------------------------------------

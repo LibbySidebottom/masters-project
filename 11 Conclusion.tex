@@ -1,31 +1,42 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
 
-{\bf A compulsory chapter,     of roughly $5$ pages} 
-\vspace{1cm} 
+In this thesis we have explored classical linear logic as a session typed process calculus, and 
+how this relates to concurrency. We have given a provably correct call-by-name translation from 
+the $\lambda$-calculus into classical processes and also proved substitution for this translation. 
+This shows us how sequential languages can be translated into concurrent languages and how translation  
+impacts the processes being translated. \\
 
-% \noindent
-% The concluding chapter of a dissertation is often underutilised because it 
-% is too often left too close to the deadline: it is important to allocation
-% enough attention.  Ideally, the chapter will consist of three parts:
+\noindent
+There are, of course, two translations we could have considered; call-by-name, and call-by-value. We 
+chose to consider call-by-name since this is the standard used for the $\lambda$-calculus. However, 
+it would be interesting to see how a call-by-value translation would differ from the one presented here. 
+In Girard's original work on classical linear logic, he offered two separate translations from 
+intuitionistic logic into linear logic. The first is the one used to guide the translation presented 
+in this thesis. The second translation differs from the first and would give the following if we 
+chose to do the translation from $\lambda$-calculus into classical linear logic: 
+\begin{align*}
+    (A + B)^* &= A^* \oplus B^* \\
+    (A \times B)^* &= A^* \otimes B^* \\
+    (A \rightarrow B)^* &= \ofc(\negg{A^*} \parr B^*)
+\end{align*}
 
-% \begin{enumerate}
-% \item (Re)summarise the main contributions and achievements, in essence
-%       summing up the content.
-% \item Clearly state the current project status (e.g., ``X is working, Y 
-%       is not'') and evaluate what has been achieved with respect to the 
-%       initial aims and objectives (e.g., ``I completed aim X outlined 
-%       previously, the evidence for this is within Chapter Y'').  There 
-%       is no problem including aims which were not completed, but it is 
-%       important to evaluate and/or justify why this is the case.
-% \item Outline any open problems or future plans.  Rather than treat this
-%       only as an exercise in what you {\em could} have done given more 
-%       time, try to focus on any unexplored options or interesting outcomes
-%       (e.g., ``my experiment for X gave counter-intuitive results, this 
-%       could be because Y and would form an interesting area for further 
-%       study'' or ``users found feature Z of my software difficult to use,
-%       which is obvious in hindsight but not during at design stage; to 
-%       resolve this, I could clearly apply the technique of Smith [7]'').
-% \end{enumerate}
+\noindent
+Although Girard dismissed this as a boring translation, Toninho et al. \cite{toninho2012} used it to 
+create a call-by-value translation from the $\lambda$-calculus into the $\pi$-calculus. It would be 
+interesting to follow along these lines to see how a call-by-value translation from the $\lambda$-calculus 
+into CP would look. \\
+
+\section{Future Work}
+
+This thesis provides the logical foundations for a message-passing concurrent programming language 
+which uses session types to ensure type safety. Currently, the only concurrent language (that we know of) 
+which has its basis in linear logic and session types is Concurrent C0 \cite{C0Full} which is used 
+as a teaching language for students learning concurrent programming. We could create a full-scale language 
+based on these ideas using the logic included here and practical implementation of C0. \\
+
+\noindent
+We can also consider what happens when we have $\otimes = \parr$ in CLL and what we need to add to CLL 
+in order to translate untyped $\pi$-calculus into CLL with these unknown additions. 
 
 % -----------------------------------------------------------------------------

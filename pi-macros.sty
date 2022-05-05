@@ -12,7 +12,7 @@
 \definecolor{ThroneBlue}{RGB}{51, 51, 102}
 \definecolor{JustBlue}{RGB}{0,0,255}
 \definecolor{PermaRed}{RGB}{255, 102, 102}
-\definecolor{DogwoodRose}{HTML}{cc3366}
+\definecolor{DogwoodRose}{HTML}{dd3366}
 \definecolor{MaizeCrayola}{RGB}{255, 204, 102}
 \definecolor{Black}{RGB}{0, 0, 0}
 
@@ -101,7 +101,7 @@
 % \New{x}{y}{P} yields nu xy. P
 % \New*{x}{y}{P} yields nu xy. (P)
 \NewDocumentCommand{\New}{smmm}{
-  \Proc{\nu \Name{#2}\Name{#3}\Proc{.} \,\IfBooleanTF{#1}{\Procparens{#4}}{#4}}
+  \Proc{\nu \Name{#2}\Name{#3}\Proc{.} \,\IfBooleanTF{#1}{\{#4\}}{#4}}
 }
 % \Par{P}{Q} yields P | Q
 % \Par*{P}{Q} yields (P | Q)
@@ -112,11 +112,11 @@
 \NewDocumentCommand{\Inr}{mm}{\Out{#1}{\Proc{\textsf{inr}}}{\Proc{#2}}}
 % \Case{x}{Q}{R} yields x.case(Q; R)
 \NewDocumentCommand{\Casep}{mmm}{
-  \Proc{\Name{#1}.\textsf{case}\{#2; #3\}}
+  \Proc{\Name{#1}.\textsf{case}(#2; #3)}
 }
 % \EmCase{x} yields x.case()
 \NewDocumentCommand{\EmCase}{m}{
-  \Proc{\Name{#1}.\textsf{case}\{\}}
+  \Proc{\Name{#1}.\textsf{case}()}
 }
 % \Depar{x}{y}{P} yields depar(x;y;P)
 \NewDocumentCommand{\Depar}{mmm}{
